@@ -42,7 +42,7 @@ export default function Home() {
         html { scroll-behavior: smooth; }
         body { margin: 0; background: #07111e; }
         .site {
-          background: #07111e;
+          background: #071A33;
           color: #f4f8ff;
           min-height: 100vh;
           font-family: Arial, sans-serif;
