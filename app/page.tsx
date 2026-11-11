@@ -277,13 +277,12 @@ export default function Home() {
         }
       `}</style>
 
-      <div className="rt">
-        <div className="container">
-          <nav className="nav">
-            <a href="#" className="logo">
-              <span className="logo-mark">R</span>
-              RETRADE
-            </a>
+      <a href="#" className="brand-logo">
+  <img
+    src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png"
+    alt="Retrade"
+  />
+</a>
 
             <div className="nav-links">
               <a href="#benefits">Why Retrade</a>
