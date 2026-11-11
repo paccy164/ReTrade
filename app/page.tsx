@@ -2,305 +2,457 @@
 const faqs = [
   {
     q: "What is Retrade?",
-    a: "Retrade is a platform designed to help eligible traders receive and manage cashback rewards linked to broker commissions."
+    a: "Retrade is a trading cashback platform designed to help eligible traders receive a share of broker commissions generated from their trading activity."
   },
   {
-    q: "How do I earn cashback?",
-    a: "Eligible trading activity may generate broker commissions. Cashback is credited after the corresponding commission has been received and verified."
+    q: "How does cashback work?",
+    a: "When eligible trading activity generates broker commission, Retrade verifies the commission received and calculates the trader's cashback share."
   },
   {
-    q: "Which broker is supported?",
-    a: "XM is the initial broker planned for the Retrade launch. Additional broker integrations may be introduced later."
+    q: "Do I need to change my broker?",
+    a: "You may be able to register through a Retrade referral link or transfer an existing account where the broker permits it."
   },
   {
-    q: "When will my cashback be credited?",
-    a: "Cashback timing depends on broker reporting, commission confirmation and settlement."
+    q: "When is cashback credited?",
+    a: "Cashback is credited after the corresponding broker commission has been received and verified. Processing times may vary."
   },
   {
-    q: "Can I withdraw my cashback?",
-    a: "Eligible verified cashback can be requested for withdrawal subject to the platform's withdrawal rules and minimum amount."
+    q: "Can I connect multiple trading accounts?",
+    a: "Yes. Retrade is designed to support multiple eligible trading accounts under one user profile."
   },
   {
-    q: "Does Retrade guarantee trading profits?",
-    a: "No. Retrade is a cashback platform, not an investment service. Forex and CFD trading involve risk and can result in losses."
+    q: "Is Retrade affiliated with XM?",
+    a: "Retrade is an independent cashback platform. Broker names and trademarks belong to their respective owners."
   }
 ];
 
-const styles = `
-*{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:#050505;color:#fff;font-family:Arial,sans-serif}
-a{text-decoration:none;color:inherit}
-button{font-family:inherit}
-.site{background:#050505;min-height:100vh;overflow:hidden}
-.container{width:min(1160px,90%);margin:auto}
+const benefits = [
+  {
+    number: "01",
+    title: "Earn while you trade",
+    description: "Receive cashback from eligible trading activity without changing the way you approach the markets.",
+    icon: "↗"
+  },
+  {
+    number: "02",
+    title: "One clear wallet",
+    description: "Keep your verified cashback and withdrawal history organized in one place.",
+    icon: "◈"
+  },
+  {
+    number: "03",
+    title: "Full transparency",
+    description: "Follow your cashback transactions with a clear record of credits and withdrawals.",
+    icon: "◎"
+  }
+];
 
-.nav{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff18}
-.logo{font-size:27px;font-weight:900;letter-spacing:-1.5px}
-.logo span{color:#3b82f6}
-.navlinks{display:flex;align-items:center;gap:28px;font-size:14px;color:#cbd5e1}
-.navlinks a:hover{color:#60a5fa}
-
-.btn{display:inline-flex;align-items:center;justify-content:center;background:#2563eb;color:white;padding:14px 23px;border-radius:6px;font-weight:800;font-size:14px;border:1px solid #2563eb;transition:.2s;cursor:pointer}
-.btn:hover{background:#3b82f6;transform:translateY(-2px)}
-.btn-outline{border:1px solid #ffffff45;background:transparent}
-
-.hero{padding:105px 0 100px;display:grid;grid-template-columns:1.05fr .95fr;gap:55px;align-items:center}
-.eyebrow{color:#60a5fa;font-size:12px;letter-spacing:2.5px;font-weight:800;text-transform:uppercase}
-h1{font-size:clamp(43px,6vw,70px);line-height:1.05;letter-spacing:-3px;margin:22px 0}
-h1 span{color:#60a5fa}
-.hero p{color:#b6b6b6;font-size:17px;line-height:1.8;max-width:540px}
-.hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
-.trustline{margin-top:35px;color:#888;font-size:12px;letter-spacing:1px}
-
-.hero-card{background:linear-gradient(145deg,#191919,#090909);border:1px solid #333;border-radius:18px;padding:30px;box-shadow:0 30px 90px #000}
-.card-head{display:flex;justify-content:space-between;align-items:center;color:#b6b6b6;font-size:13px;gap:10px}
-.live{color:#60a5fa;font-size:11px;font-weight:800}
-.balance{font-size:43px;font-weight:900;margin:32px 0 5px}
-.balance-label{font-size:13px;color:#999}
-.chart{height:105px;margin:30px 0 22px;display:flex;align-items:end;gap:9px}
-.chart i{display:block;flex:1;background:linear-gradient(180deg,#3b82f6,#2563eb22);border-radius:4px 4px 0 0}
-.chart i:nth-child(1){height:30%}.chart i:nth-child(2){height:45%}.chart i:nth-child(3){height:38%}.chart i:nth-child(4){height:62%}.chart i:nth-child(5){height:55%}.chart i:nth-child(6){height:76%}.chart i:nth-child(7){height:68%}.chart i:nth-child(8){height:95%}
-.card-foot{border-top:1px solid #ffffff20;padding-top:20px;display:flex;justify-content:space-between;color:#999;font-size:12px;gap:10px}
-
-.section{padding:90px 0}
-.section-light{background:#0d0d0d;border-top:1px solid #ffffff0b;border-bottom:1px solid #ffffff0b}
-.center{text-align:center}
-h2{font-size:clamp(30px,4vw,45px);letter-spacing:-1.5px;margin:15px 0}
-.section-intro{color:#aaa;line-height:1.8;max-width:650px;margin:0 auto}
-
-.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.feature{background:#151515;border:1px solid #292929;border-radius:12px;overflow:hidden;transition:.2s}
-.feature:hover{border-color:#3b82f6;transform:translateY(-4px)}
-.feature-image{height:155px;background-size:cover;background-position:center;position:relative}
-.feature-image:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#111 0%,transparent 75%)}
-.feature-content{padding:25px 28px 30px}
-.iconbox{height:43px;width:43px;border-radius:10px;background:#2563eb22;color:#60a5fa;display:grid;place-items:center;font-size:22px;margin-bottom:20px}
-.feature h3{font-size:19px;margin:0 0 12px}
-.feature p{font-size:14px;line-height:1.8;color:#aaa;margin:0}
-
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;margin-top:48px;text-align:left}
-.step{border-top:2px solid #2563eb;padding-top:23px}
-.stepnum{font-size:13px;color:#60a5fa;font-weight:900;letter-spacing:2px}
-.step h3{font-size:20px;margin:15px 0 10px}
-.step p{color:#aaa;font-size:14px;line-height:1.8}
-
-.broker-panel{margin-top:45px;padding:38px;background:linear-gradient(110deg,#191919,#0b0b0b);border:1px solid #333;border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap;text-align:left}
-.broker-name{font-size:34px;font-weight:900;letter-spacing:-1px}
-.broker-name span{color:#60a5fa}
-.broker-tag{font-size:12px;color:#aaa;margin-top:8px}
-.status{background:#2563eb22;color:#93c5fd;border:1px solid #2563eb66;padding:9px 14px;border-radius:30px;font-size:12px;font-weight:800}
-
-.split{display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center}
-.checklist{display:grid;gap:18px;margin-top:28px}
-.check{display:flex;gap:14px;align-items:flex-start;color:#d5d5d5;font-size:14px;line-height:1.7}
-.check b{color:#60a5fa;font-size:18px}
-.info-panel{background:#151515;border:1px solid #292929;border-radius:15px;padding:35px}
-.info-panel h3{font-size:24px;margin-top:0}
-.info-panel p{color:#aaa;line-height:1.8;font-size:14px}
-
-.faq{max-width:820px;margin:45px auto 0;text-align:left}
-details{background:#151515;border:1px solid #292929;padding:22px;border-radius:9px;margin-bottom:12px}
-summary{cursor:pointer;font-weight:700;list-style:none}
-summary::-webkit-details-marker{display:none}
-summary:after{content:"+";float:right;color:#60a5fa;font-size:21px}
-details[open] summary:after{content:"−"}
-details p{color:#aaa;font-size:14px;line-height:1.8;margin-bottom:0}
-
-.cta{padding:75px 25px;text-align:center;background:linear-gradient(120deg,#191919,#080808);border:1px solid #333;border-radius:16px}
-.cta p{color:#aaa;line-height:1.8;max-width:570px;margin:15px auto 28px}
-
-footer{padding:38px 0;border-top:1px solid #ffffff18;margin-top:80px}
-.footerrow{display:flex;justify-content:space-between;gap:25px;flex-wrap:wrap}
-.footertext{font-size:13px;color:#888;line-height:1.8;max-width:400px}
-.footerlinks{display:flex;gap:22px;flex-wrap:wrap;color:#aaa;font-size:13px}
-.footerlinks a:hover{color:#60a5fa}
-.disclaimer{margin-top:28px;padding-top:20px;border-top:1px solid #ffffff15;color:#777;font-size:11px;line-height:1.7}
-
-@media(max-width:800px){
-.nav{height:auto;min-height:75px}
-.navlinks{gap:13px}
-.navlinks a:not(.navbtn){display:none}
-.hero{grid-template-columns:1fr;padding:70px 0;gap:40px}
-.grid3,.steps{grid-template-columns:1fr}
-.split{grid-template-columns:1fr;gap:30px}
-.section{padding:65px 0}
-h1{letter-spacing:-2px}
-.broker-panel{padding:27px}
-}
-`;
+const steps = [
+  {
+    n: "01",
+    title: "Create your account",
+    description: "Sign up with Retrade and create your personal cashback profile."
+  },
+  {
+    n: "02",
+    title: "Connect your broker",
+    description: "Register through an eligible referral route or link an existing account where supported."
+  },
+  {
+    n: "03",
+    title: "Trade as usual",
+    description: "Continue trading through your eligible broker account."
+  },
+  {
+    n: "04",
+    title: "Receive cashback",
+    description: "Once broker commissions are received and verified, eligible cashback is credited to your wallet."
+  }
+];
 
 export default function Home() {
   return (
-    <>
-      <style>{styles}</style>
-      <main className="site">
+    <main>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap');
+
+        * { box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+        body { margin: 0; background: #050505; color: #fff; font-family: 'DM Sans', sans-serif; }
+        a { color: inherit; text-decoration: none; }
+        button { font: inherit; }
+
+        .rt {
+          --bg: #050505;
+          --panel: #101010;
+          --panel2: #161616;
+          --line: rgba(255,255,255,.10);
+          --muted: #999;
+          --blue: #2478ff;
+          --white: #fff;
+          overflow: hidden;
+          background: var(--bg);
+        }
+
+        .container { width: min(1160px, calc(100% - 48px)); margin: auto; }
+        .nav {
+          height: 82px; display: flex; align-items: center; justify-content: space-between;
+          border-bottom: 1px solid rgba(255,255,255,.08);
+        }
+        .logo { display: flex; align-items: center; gap: 10px; font: 800 25px Manrope,sans-serif; letter-spacing: -1.3px; }
+        .logo-mark {
+          width: 34px; height: 34px; display: grid; place-items: center;
+          border-radius: 10px; color: white; background: var(--blue);
+          font-size: 20px; font-weight: 800;
+        }
+        .nav-links { display: flex; align-items: center; gap: 32px; color: #aaa; font-size: 13px; }
+        .nav-links a:hover { color: white; }
+        .nav-actions { display: flex; align-items: center; gap: 20px; font-size: 13px; }
+        .login { color: #ccc; }
+        .btn {
+          display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+          background: var(--blue); color: white; padding: 14px 21px; border-radius: 7px;
+          font-size: 13px; font-weight: 700; border: 1px solid var(--blue);
+          transition: .2s ease; cursor: pointer;
+        }
+        .btn:hover { background: #1265ed; transform: translateY(-2px); }
+        .btn-outline { background: transparent; border-color: rgba(255,255,255,.24); }
+        .btn-outline:hover { background: rgba(255,255,255,.08); border-color: white; }
+        .eyebrow { color: #65a0ff; font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+        .hero { padding: 88px 0 95px; position: relative; }
+        .hero:before {
+          content: ''; position: absolute; width: 650px; height: 500px; right: -170px; top: -80px;
+          background: radial-gradient(ellipse,rgba(20,91,210,.19),transparent 68%);
+          pointer-events: none;
+        }
+        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 65px; position: relative; }
+        h1,h2,h3,p { margin-top: 0; }
+        h1 {
+          font: 800 clamp(43px,6vw,70px)/1.08 Manrope,sans-serif;
+          letter-spacing: -3.7px; margin: 23px 0;
+        }
+        h1 span { color: #6ca5ff; }
+        .hero-copy { color: #aaa; font-size: 16px; line-height: 1.85; max-width: 480px; }
+        .hero-actions { display: flex; gap: 13px; margin-top: 32px; flex-wrap: wrap; }
+        .hero-note { margin-top: 25px; color: #777; font-size: 11px; }
+        .hero-visual {
+          position: relative; padding: 24px; border: 1px solid rgba(255,255,255,.12);
+          border-radius: 16px; background: linear-gradient(145deg,#171717,#090909);
+          box-shadow: 0 30px 90px rgba(0,0,0,.5);
+        }
+        .visual-top { display: flex; justify-content: space-between; align-items: center; color: #aaa; font-size: 11px; }
+        .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #3bd18a; margin-right: 7px; }
+        .balance-label { color: #888; font-size: 12px; margin-top: 28px; }
+        .balance { font: 800 39px Manrope,sans-serif; letter-spacing: -1.5px; margin: 7px 0; }
+        .balance-sub { font-size: 11px; color: #5bd99a; }
+        .chart { width: 100%; height: 145px; margin: 24px 0 10px; }
+        .chart svg { width: 100%; height: 100%; overflow: visible; }
+        .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .stat {
+          background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.07);
+          border-radius: 9px; padding: 15px;
+        }
+        .stat small { display: block; color: #888; font-size: 10px; margin-bottom: 8px; }
+        .stat strong { font: 700 19px Manrope,sans-serif; }
+        .visual-foot { display: flex; justify-content: space-between; color: #777; font-size: 10px; margin-top: 18px; }
+        .floating {
+          position: absolute; right: -25px; bottom: 45px; padding: 14px 18px;
+          border-radius: 10px; background: #202020; border: 1px solid #343434;
+          box-shadow: 0 12px 35px #0008; font-size: 11px;
+        }
+        .floating strong { display: block; color: #5bd99a; font-size: 16px; margin-top: 5px; }
+
+        .trust-strip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 25px 0; }
+        .trust-inner { display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+        .trust-label { color: #777; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; }
+        .trust-item { color: #bbb; font-size: 13px; font-weight: 700; }
+        .trust-item span { color: #666; font-weight: 400; margin-left: 7px; }
+
+        .section { padding: 105px 0; }
+        .section-head { max-width: 650px; margin-bottom: 48px; }
+        .section-head h2 {
+          font: 800 clamp(30px,4vw,45px)/1.18 Manrope,sans-serif;
+          letter-spacing: -1.8px; margin: 16px 0;
+        }
+        .section-head p { color: var(--muted); font-size: 14px; line-height: 1.8; }
+        .benefit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 17px; }
+        .benefit {
+          min-height: 240px; padding: 28px; border: 1px solid var(--line);
+          border-radius: 12px; background: linear-gradient(145deg,#151515,#0b0b0b);
+          transition: .25s ease;
+        }
+        .benefit:hover { transform: translateY(-5px); border-color: rgba(36,120,255,.55); }
+        .benefit-icon {
+          width: 43px; height: 43px; display: grid; place-items: center;
+          border-radius: 10px; background: rgba(36,120,255,.13); color: #6ca5ff; font-size: 22px;
+        }
+        .benefit-num { color: #666; font-size: 10px; margin-top: 28px; }
+        .benefit h3 { font: 700 19px Manrope,sans-serif; margin: 12px 0; }
+        .benefit p { color: #929292; font-size: 13px; line-height: 1.8; margin: 0; }
+
+        .how { background: #0c0c0c; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+        .steps { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+        .step { padding: 23px 19px; border-top: 1px solid #333; }
+        .step-number { color: #5796ff; font: 800 13px Manrope,sans-serif; }
+        .step h3 { font: 700 17px Manrope,sans-serif; margin: 22px 0 10px; }
+        .step p { color: #929292; font-size: 12px; line-height: 1.8; }
+
+        .broker-box {
+          display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 50px;
+          padding: 48px; border-radius: 16px; border: 1px solid var(--line);
+          background: radial-gradient(circle at 90% 20%,rgba(36,120,255,.12),transparent 38%),#101010;
+        }
+        .broker-box h2 { font: 800 36px Manrope,sans-serif; letter-spacing: -1.5px; margin: 16px 0; }
+        .broker-box p { color: #999; line-height: 1.8; font-size: 13px; }
+        .broker-logo {
+          min-height: 190px; display: grid; place-items: center;
+          border-radius: 12px; background: linear-gradient(145deg,#191919,#090909);
+          border: 1px solid #292929;
+        }
+        .xm-word { font: 800 64px Manrope,sans-serif; letter-spacing: -5px; color: white; }
+        .xm-word span { color: #e22d3c; }
+        .broker-caption { color: #777; font-size: 10px; margin-top: 9px; letter-spacing: 2px; }
+
+        .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .faq-item { border: 1px solid var(--line); border-radius: 9px; background: #101010; padding: 21px; }
+        .faq-item summary { cursor: pointer; list-style: none; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; gap: 15px; }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item summary:after { content: '+'; color: #65a0ff; font-size: 18px; }
+        .faq-item[open] summary:after { content: '−'; }
+        .faq-item p { color: #999; font-size: 12px; line-height: 1.8; margin: 15px 0 0; }
+
+        .cta { padding: 0 0 100px; }
+        .cta-box {
+          padding: 65px 30px; text-align: center; border-radius: 16px;
+          border: 1px solid rgba(60,130,255,.28);
+          background: radial-gradient(ellipse at center,rgba(30,92,190,.2),transparent 65%),#101010;
+        }
+        .cta-box h2 { font: 800 clamp(30px,4vw,44px) Manrope,sans-serif; letter-spacing: -1.7px; margin: 17px 0; }
+        .cta-box p { color: #999; font-size: 13px; line-height: 1.8; }
+        .cta-box .btn { margin-top: 16px; }
+
+        footer { border-top: 1px solid var(--line); padding: 40px 0 25px; }
+        .footer-top { display: flex; justify-content: space-between; gap: 35px; flex-wrap: wrap; }
+        .footer-desc { color: #777; max-width: 300px; font-size: 12px; line-height: 1.8; margin-top: 15px; }
+        .footer-links { display: flex; gap: 25px; color: #999; font-size: 12px; flex-wrap: wrap; }
+        .footer-bottom { border-top: 1px solid var(--line); margin-top: 30px; padding-top: 20px; color: #666; font-size: 10px; line-height: 1.8; }
+
+        @media(max-width:850px) {
+          .nav-links { display: none; }
+          .hero-grid { grid-template-columns: 1fr; gap: 55px; }
+          .hero { padding: 65px 0 75px; }
+          .hero-visual { max-width: 600px; }
+          .benefit-grid { grid-template-columns: 1fr 1fr; }
+          .steps { grid-template-columns: 1fr 1fr; }
+          .broker-box { grid-template-columns: 1fr; padding: 30px; }
+        }
+        @media(max-width:560px) {
+          .container { width: min(100% - 34px,1160px); }
+          .nav { height: 70px; }
+          .logo { font-size: 22px; }
+          .nav-actions { gap: 12px; }
+          .nav-actions .login { display: none; }
+          .nav-actions .btn { padding: 11px 14px; font-size: 11px; }
+          h1 { font-size: 46px; letter-spacing: -2.5px; }
+          .hero-copy { font-size: 14px; }
+          .hero { padding: 55px 0 65px; }
+          .hero-visual { padding: 18px; }
+          .balance { font-size: 32px; }
+          .floating { right: -7px; bottom: 28px; }
+          .trust-inner { justify-content: flex-start; }
+          .trust-item { width: calc(50% - 12px); }
+          .section { padding: 75px 0; }
+          .benefit-grid { grid-template-columns: 1fr; }
+          .benefit { min-height: auto; }
+          .steps { grid-template-columns: 1fr; gap: 23px; }
+          .step { padding: 15px 4px; }
+          .faq-grid { grid-template-columns: 1fr; }
+          .broker-box { padding: 24px; }
+          .broker-box h2 { font-size: 30px; }
+          .xm-word { font-size: 54px; }
+          .cta { padding-bottom: 70px; }
+          .cta-box { padding: 45px 20px; }
+          .footer-top { flex-direction: column; }
+          .footer-links { gap: 17px; }
+        }
+      `}</style>
+
+      <div className="rt">
         <div className="container">
           <nav className="nav">
-            <a href="#" className="logo">RE<span>TRADE</span></a>
-            <div className="navlinks">
-              <a href="#benefits">Benefits</a>
+            <a href="#" className="logo">
+              <span className="logo-mark">R</span>
+              RETRADE
+            </a>
+
+            <div className="nav-links">
+              <a href="#benefits">Why Retrade</a>
               <a href="#how">How it works</a>
               <a href="#brokers">Brokers</a>
               <a href="#faq">FAQ</a>
-              <a href="#how" className="btn navbtn">Get Started</a>
+            </div>
+
+            <div className="nav-actions">
+              <a href="/login" className="login">Log in</a>
+              <a href="/signup" className="btn">Get started <span>↗</span></a>
             </div>
           </nav>
-
-          <section className="hero">
-            <div>
-              <div className="eyebrow">A smarter way to trade</div>
-              <h1>Trade more.<br/><span>Get rewarded.</span></h1>
-              <p>
-                Turn your trading activity into cashback rewards.
-                Retrade helps eligible traders receive a share of
-                broker commissions through a simple, transparent platform.
-              </p>
-              <div className="hero-actions">
-                <a className="btn" href="#how">Start earning cashback →</a>
-                <a className="btn btn-outline" href="#benefits">Discover Retrade</a>
-              </div>
-              <div className="trustline">TRANSPARENCY · SIMPLICITY · TRADER REWARDS</div>
-            </div>
-
-            <div className="hero-card">
-              <div className="card-head">
-                <span>Retrade Cashback Overview</span>
-                <span className="live">● DEMO</span>
-              </div>
-              <div className="balance">$125.80</div>
-              <div className="balance-label">Illustrative cashback balance — not a live account</div>
-              <div className="chart">
-                <i/><i/><i/><i/><i/><i/><i/><i/>
-              </div>
-              <div className="card-foot">
-                <span>Trading rewards</span>
-                <span>Illustrative example</span>
-              </div>
-            </div>
-          </section>
         </div>
 
-        <section className="section section-light" id="benefits">
-          <div className="container center">
-            <div className="eyebrow">Why Retrade</div>
-            <h2>Your trading deserves more.</h2>
-            <p className="section-intro">
-              A straightforward cashback experience designed to make
-              broker rewards easier to understand and manage.
-            </p>
-            <div className="grid3">
-              <article className="feature">
-                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=85')"}}></div>
-                <div className="feature-content">
-                  <div className="iconbox">↗</div>
-                  <h3>Earn cashback</h3>
-                  <p>Receive eligible cashback based on verified broker commissions generated by your trading activity.</p>
-                </div>
-              </article>
-              <article className="feature">
-                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=85')"}}></div>
-                <div className="feature-content">
-                  <div className="iconbox">◎</div>
-                  <h3>One wallet</h3>
-                  <p>Keep track of your eligible rewards in one convenient Retrade account.</p>
-                </div>
-              </article>
-              <article className="feature">
-                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=85')"}}></div>
-                <div className="feature-content">
-                  <div className="iconbox">⌁</div>
-                  <h3>Clear records</h3>
-                  <p>Follow your cashback history and understand the status of your rewards and withdrawals.</p>
-                </div>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="section" id="how">
-          <div className="container center">
-            <div className="eyebrow">Simple process</div>
-            <h2>How Retrade works</h2>
-            <p className="section-intro">
-              Three simple steps to get started with eligible trading cashback.
-            </p>
-            <div className="steps">
-              <article className="step">
-                <div className="stepnum">STEP 01</div>
-                <h3>Create your account</h3>
-                <p>Register with Retrade and follow the instructions for linking an eligible broker account.</p>
-              </article>
-              <article className="step">
-                <div className="stepnum">STEP 02</div>
-                <h3>Trade with your broker</h3>
-                <p>Trade through an eligible linked account under the applicable broker partnership terms.</p>
-              </article>
-              <article className="step">
-                <div className="stepnum">STEP 03</div>
-                <h3>Receive verified rewards</h3>
-                <p>Eligible cashback is credited after the corresponding broker commission is received and verified.</p>
-              </article>
-            </div>
-          </div>
-        </section>
-
-        <section className="section section-light" id="brokers">
-          <div className="container center">
-            <div className="eyebrow">Broker network</div>
-            <h2>Our supported brokers</h2>
-            <p className="section-intro">
-              We are starting with XM. More broker integrations may be introduced as partnerships become available.
-            </p>
-            <div className="broker-panel">
-              <div>
-                <div className="broker-name">XM <span>Partner</span></div>
-                <div className="broker-tag">Initial broker launch</div>
-              </div>
-              <span className="status">INITIAL LAUNCH BROKER</span>
-            </div>
-          </div>
-        </section>
-
-        <section className="section">
-          <div className="container split">
+        <section className="hero">
+          <div className="container hero-grid">
             <div>
-              <div className="eyebrow">Built around traders</div>
-              <h2>A clearer cashback experience.</h2>
-              <p className="section-intro" style={{margin:"0",textAlign:"left"}}>
-                Retrade is designed to make tracking eligible rewards
-                simple, with clear records and a single place to manage
-                your cashback activity.
+              <div className="eyebrow">A smarter way to trade</div>
+              <h1>Make every trade <span>count.</span></h1>
+              <p className="hero-copy">
+                Your trading activity can do more. Retrade helps eligible traders
+                turn broker commissions into cashback, with a clearer way to
+                track what they earn.
               </p>
-              <div className="checklist">
-                <div className="check"><b>✓</b><span>One account to manage your Retrade activity.</span></div>
-                <div className="check"><b>✓</b><span>Clear cashback transaction history.</span></div>
-                <div className="check"><b>✓</b><span>Commission verification before cashback is credited.</span></div>
-                <div className="check"><b>✓</b><span>Withdrawal requests with transparent status tracking.</span></div>
+              <div className="hero-actions">
+                <a href="/signup" className="btn">Start earning cashback <span>↗</span></a>
+                <a href="#how" className="btn btn-outline">Discover how it works</a>
+              </div>
+              <div className="hero-note">
+                Independent cashback platform · Transparent commission verification
               </div>
             </div>
-            <div className="info-panel">
-              <div className="eyebrow">Our commitment</div>
-              <h3>Rewards with transparency.</h3>
-              <p>
-                Cashback depends on broker commission arrangements,
-                account eligibility, trading conditions and successful
-                commission settlement. Retrade does not guarantee
-                trading profits or returns.
-              </p>
-              <a href="#faq" className="btn">Learn more</a>
+
+            <div className="hero-visual">
+              <div className="visual-top">
+                <span>RETRADE WALLET</span>
+                <span><i className="live-dot"></i>Illustrative preview</span>
+              </div>
+              <div className="balance-label">Example cashback balance</div>
+              <div className="balance">$125.80</div>
+              <div className="balance-sub">↑ Example verified cashback</div>
+
+              <div className="chart">
+                <svg viewBox="0 0 500 145" preserveAspectRatio="none">
+                  <defs>
+                    <linearGradient id="area" x1="0" x2="0" y1="0" y2="1">
+                      <stop offset="0%" stopColor="#2478ff" stopOpacity=".35"/>
+                      <stop offset="100%" stopColor="#2478ff" stopOpacity="0"/>
+                    </linearGradient>
+                  </defs>
+                  <path d="M0 115 C35 110 42 90 75 99 S120 105 150 78 S195 91 225 68 S270 83 300 52 S350 65 380 36 S440 49 500 10 L500 145 L0 145 Z" fill="url(#area)"/>
+                  <path d="M0 115 C35 110 42 90 75 99 S120 105 150 78 S195 91 225 68 S270 83 300 52 S350 65 380 36 S440 49 500 10" fill="none" stroke="#438cff" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
+              </div>
+
+              <div className="stat-row">
+                <div className="stat">
+                  <small>Example cashback earned</small>
+                  <strong>$184.50</strong>
+                </div>
+                <div className="stat">
+                  <small>Example withdrawals</small>
+                  <strong>$58.70</strong>
+                </div>
+              </div>
+              <div className="visual-foot">
+                <span>Illustrative figures only</span>
+                <span>Personal wallet preview</span>
+              </div>
+              <div className="floating">
+                Cashback status
+                <strong>Commission verified ✓</strong>
+              </div>
             </div>
           </div>
         </section>
 
-        <section className="section section-light" id="faq">
-          <div className="container center">
-            <div className="eyebrow">Need answers?</div>
-            <h2>Frequently asked questions</h2>
-            <p className="section-intro">A few things to know before getting started.</p>
-            <div className="faq">
-              {faqs.map((faq, index) => (
-                <details key={index}>
+        <div className="trust-strip">
+          <div className="container trust-inner">
+            <div className="trust-label">Built around transparency</div>
+            <div className="trust-item">01 <span>Verified commissions</span></div>
+            <div className="trust-item">02 <span>One cashback wallet</span></div>
+            <div className="trust-item">03 <span>Clear transaction history</span></div>
+          </div>
+        </div>
+
+        <section className="section" id="benefits">
+          <div className="container">
+            <div className="section-head">
+              <div className="eyebrow">The Retrade advantage</div>
+              <h2>More value from the way you already trade.</h2>
+              <p>
+                A simple, transparent cashback experience designed to make
+                your trading activity more rewarding.
+              </p>
+            </div>
+
+            <div className="benefit-grid">
+              {benefits.map((item) => (
+                <div className="benefit" key={item.number}>
+                  <div className="benefit-icon">{item.icon}</div>
+                  <div className="benefit-num">{item.number} / BENEFIT</div>
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section how" id="how">
+          <div className="container">
+            <div className="section-head">
+              <div className="eyebrow">Simple by design</div>
+              <h2>Four steps. One smarter experience.</h2>
+              <p>
+                Getting started with Retrade is straightforward.
+                Here is how the cashback journey works.
+              </p>
+            </div>
+
+            <div className="steps">
+              {steps.map((step) => (
+                <div className="step" key={step.n}>
+                  <div className="step-number">{step.n}</div>
+                  <h3>{step.title}</h3>
+                  <p>{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="brokers">
+          <div className="container">
+            <div className="broker-box">
+              <div>
+                <div className="eyebrow">Our broker network</div>
+                <h2>Start with a broker you know.</h2>
+                <p>
+                  Retrade is beginning with XM. Eligible account connections
+                  and cashback depend on broker requirements, referral
+                  attribution and verified commission records.
+                </p>
+                <a href="/signup" className="btn">Get started <span>↗</span></a>
+              </div>
+
+              <div className="broker-logo">
+                <div style={{textAlign:"center"}}>
+                  <div className="xm-word">X<span>M</span></div>
+                  <div className="broker-caption">INITIAL BROKER SUPPORT</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="section" id="faq">
+          <div className="container">
+            <div className="section-head">
+              <div className="eyebrow">Questions, answered</div>
+              <h2>Everything you need to know.</h2>
+              <p>Some helpful answers before you get started with Retrade.</p>
+            </div>
+
+            <div className="faq-grid">
+              {faqs.map((faq) => (
+                <details className="faq-item" key={faq.q}>
                   <summary>{faq.q}</summary>
                   <p>{faq.a}</p>
                 </details>
@@ -309,49 +461,54 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="section">
+        <section className="cta">
           <div className="container">
-            <div className="cta">
-              <div className="eyebrow">Make every eligible trade count</div>
-              <h2>Ready for a smarter reward experience?</h2>
+            <div className="cta-box">
+              <div className="eyebrow">Your trading. More value.</div>
+              <h2>Ready to make your trades count?</h2>
               <p>
-                Discover how Retrade aims to make broker cashback
-                clearer, simpler and easier to manage.
+                Join Retrade and discover a clearer way to track eligible
+                trading cashback.
               </p>
-              <a href="#how" className="btn">Explore how it works →</a>
+              <a href="/signup" className="btn">Create your account <span>↗</span></a>
             </div>
           </div>
         </section>
 
         <footer>
           <div className="container">
-            <div className="footerrow">
+            <div className="footer-top">
               <div>
-                <a href="#" className="logo">RE<span>TRADE</span></a>
-                <p className="footertext">
-                  A smarter way to track and manage eligible trading cashback.
+                <a href="#" className="logo">
+                  <span className="logo-mark">R</span>
+                  RETRADE
+                </a>
+                <p className="footer-desc">
+                  A smarter cashback experience for eligible traders.
+                  Built around clarity, transparency and verified commissions.
                 </p>
               </div>
-              <div className="footerlinks">
-                <a href="#benefits">Benefits</a>
+
+              <div className="footer-links">
+                <a href="#benefits">Why Retrade</a>
                 <a href="#how">How it works</a>
                 <a href="#brokers">Brokers</a>
                 <a href="#faq">FAQ</a>
+                <a href="/login">Log in</a>
               </div>
             </div>
-            <div className="disclaimer">
-              Risk warning: Forex and CFD trading involves significant risk
-              and may not be suitable for all investors. Cashback is subject
-              to eligibility, broker terms, commission receipt and verification.
-              Retrade is an independent platform and is not affiliated with
-              or endorsed by XM unless a formal partnership is established.
-              Broker names are used for identification purposes only.
-              <br/><br/>
+
+            <div className="footer-bottom">
               © {new Date().getFullYear()} Retrade. All rights reserved.
+              <br/>
+              Retrade is an independent cashback platform and is not a broker.
+              Trading involves risk. Cashback eligibility is subject to broker
+              terms, commission receipt and verification. Broker names and
+              trademarks belong to their respective owners.
             </div>
           </div>
         </footer>
-      </main>
-    </>
+      </div>
+    </main>
   );
 }
