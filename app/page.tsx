@@ -43,7 +43,7 @@ export default function Home() {
         body { margin: 0; background: #07111e; }
         .site {
           background: #071A33;
-          color: #f4f8ff;
+          color: #FFFFFF;
           min-height: 100vh;
           font-family: Arial, sans-serif;
           overflow: hidden;
@@ -55,11 +55,11 @@ export default function Home() {
           border-bottom: 1px solid #ffffff12;
         }
         .logo { font-size: 26px; font-weight: 900; letter-spacing: -1px; }
-        .logo span { color: #39e6b0; }
+        .logo span { color: #2563EB; }
         .navlinks { display: flex; gap: 27px; align-items: center; }
         .nav a { color: #c4cfdf; text-decoration: none; font-size: 14px; }
         .nav .navbtn, .primary {
-          background: #39e6b0; color: #06151b;
+          background: #2563EB; color: #06151b;
           border-radius: 9px; padding: 13px 20px;
           font-weight: 800; text-decoration: none;
           display: inline-block;
@@ -112,7 +112,7 @@ export default function Home() {
           gap: 18px; margin-top: 38px;
         }
         .card {
-          background: #101e30; border: 1px solid #ffffff13;
+          background: #102B4C; border: 1px solid #ffffff13;
           padding: 27px; border-radius: 17px;
         }
         .symbol {
