@@ -37,7 +37,7 @@ const faqs = [
 export default function Home() {
   return (
     <main className="site">
-      <style>{` }
+      <style>{`
        
 const styles = `
 *{box-sizing:border-box}
@@ -120,7 +120,7 @@ footer{padding:38px 0;border-top:1px solid #ffffff18;margin-top:80px}
 .section{padding:65px 0}
 h1{letter-spacing:-2px}
 .broker-panel{padding:27px}
-}
+
 `;
 
 export default function Home() {
