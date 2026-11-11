@@ -1,8 +1,4 @@
 
-"use client";
-
-import { useState } from "react";
-
 const faqs = [
   {
     q: "What is Retrade?",
@@ -33,78 +29,94 @@ const faqs = [
 const styles = `
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
-body{margin:0;background:#07152b;color:#fff;font-family:Arial,sans-serif}
+body{margin:0;background:#050505;color:#fff;font-family:Arial,sans-serif}
 a{text-decoration:none;color:inherit}
 button{font-family:inherit}
-.site{background:#07152b;min-height:100vh;overflow:hidden}
+.site{background:#050505;min-height:100vh;overflow:hidden}
 .container{width:min(1160px,90%);margin:auto}
+
 .nav{height:82px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff18}
 .logo{font-size:27px;font-weight:900;letter-spacing:-1.5px}
 .logo span{color:#3b82f6}
 .navlinks{display:flex;align-items:center;gap:28px;font-size:14px;color:#cbd5e1}
 .navlinks a:hover{color:#60a5fa}
+
 .btn{display:inline-flex;align-items:center;justify-content:center;background:#2563eb;color:white;padding:14px 23px;border-radius:6px;font-weight:800;font-size:14px;border:1px solid #2563eb;transition:.2s;cursor:pointer}
 .btn:hover{background:#3b82f6;transform:translateY(-2px)}
 .btn-outline{border:1px solid #ffffff45;background:transparent}
+
 .hero{padding:105px 0 100px;display:grid;grid-template-columns:1.05fr .95fr;gap:55px;align-items:center}
 .eyebrow{color:#60a5fa;font-size:12px;letter-spacing:2.5px;font-weight:800;text-transform:uppercase}
 h1{font-size:clamp(43px,6vw,70px);line-height:1.05;letter-spacing:-3px;margin:22px 0}
 h1 span{color:#60a5fa}
-.hero p{color:#b6c5d8;font-size:17px;line-height:1.8;max-width:540px}
+.hero p{color:#b6b6b6;font-size:17px;line-height:1.8;max-width:540px}
 .hero-actions{display:flex;gap:14px;flex-wrap:wrap;margin-top:30px}
-.trustline{margin-top:35px;color:#91a4bd;font-size:12px;letter-spacing:1px}
-.hero-card{background:linear-gradient(145deg,#12345d,#0b2140);border:1px solid #31517a;border-radius:18px;padding:30px;box-shadow:0 30px 90px #0005}
-.card-head{display:flex;justify-content:space-between;align-items:center;color:#b6c5d8;font-size:13px;gap:10px}
+.trustline{margin-top:35px;color:#888;font-size:12px;letter-spacing:1px}
+
+.hero-card{background:linear-gradient(145deg,#191919,#090909);border:1px solid #333;border-radius:18px;padding:30px;box-shadow:0 30px 90px #000}
+.card-head{display:flex;justify-content:space-between;align-items:center;color:#b6b6b6;font-size:13px;gap:10px}
 .live{color:#60a5fa;font-size:11px;font-weight:800}
 .balance{font-size:43px;font-weight:900;margin:32px 0 5px}
-.balance-label{font-size:13px;color:#9eb1ca}
+.balance-label{font-size:13px;color:#999}
 .chart{height:105px;margin:30px 0 22px;display:flex;align-items:end;gap:9px}
-.chart i{display:block;flex:1;background:linear-gradient(180deg,#3b82f6,#2563eb55);border-radius:4px 4px 0 0}
+.chart i{display:block;flex:1;background:linear-gradient(180deg,#3b82f6,#2563eb22);border-radius:4px 4px 0 0}
 .chart i:nth-child(1){height:30%}.chart i:nth-child(2){height:45%}.chart i:nth-child(3){height:38%}.chart i:nth-child(4){height:62%}.chart i:nth-child(5){height:55%}.chart i:nth-child(6){height:76%}.chart i:nth-child(7){height:68%}.chart i:nth-child(8){height:95%}
-.card-foot{border-top:1px solid #ffffff20;padding-top:20px;display:flex;justify-content:space-between;color:#a9bad0;font-size:12px;gap:10px}
+.card-foot{border-top:1px solid #ffffff20;padding-top:20px;display:flex;justify-content:space-between;color:#999;font-size:12px;gap:10px}
+
 .section{padding:90px 0}
-.section-light{background:#0b1e38}
+.section-light{background:#0d0d0d;border-top:1px solid #ffffff0b;border-bottom:1px solid #ffffff0b}
 .center{text-align:center}
 h2{font-size:clamp(30px,4vw,45px);letter-spacing:-1.5px;margin:15px 0}
-.section-intro{color:#aebed2;line-height:1.8;max-width:650px;margin:0 auto}
+.section-intro{color:#aaa;line-height:1.8;max-width:650px;margin:0 auto}
+
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:48px}
-.feature{background:#102847;border:1px solid #ffffff16;border-radius:12px;padding:30px;transition:.2s}
+.feature{background:#151515;border:1px solid #292929;border-radius:12px;overflow:hidden;transition:.2s}
 .feature:hover{border-color:#3b82f6;transform:translateY(-4px)}
-.iconbox{height:48px;width:48px;border-radius:10px;background:#2563eb22;color:#60a5fa;display:grid;place-items:center;font-size:22px;margin-bottom:23px}
+.feature-image{height:155px;background-size:cover;background-position:center;position:relative}
+.feature-image:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,#111 0%,transparent 75%)}
+.feature-content{padding:25px 28px 30px}
+.iconbox{height:43px;width:43px;border-radius:10px;background:#2563eb22;color:#60a5fa;display:grid;place-items:center;font-size:22px;margin-bottom:20px}
 .feature h3{font-size:19px;margin:0 0 12px}
-.feature p{font-size:14px;line-height:1.8;color:#aebed2;margin:0}
+.feature p{font-size:14px;line-height:1.8;color:#aaa;margin:0}
+
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:25px;margin-top:48px;text-align:left}
 .step{border-top:2px solid #2563eb;padding-top:23px}
 .stepnum{font-size:13px;color:#60a5fa;font-weight:900;letter-spacing:2px}
 .step h3{font-size:20px;margin:15px 0 10px}
-.step p{color:#aebed2;font-size:14px;line-height:1.8}
-.broker-panel{margin-top:45px;padding:38px;background:linear-gradient(110deg,#102f54,#0d2340);border:1px solid #31517a;border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap;text-align:left}
+.step p{color:#aaa;font-size:14px;line-height:1.8}
+
+.broker-panel{margin-top:45px;padding:38px;background:linear-gradient(110deg,#191919,#0b0b0b);border:1px solid #333;border-radius:16px;display:flex;align-items:center;justify-content:space-between;gap:25px;flex-wrap:wrap;text-align:left}
 .broker-name{font-size:34px;font-weight:900;letter-spacing:-1px}
 .broker-name span{color:#60a5fa}
-.broker-tag{font-size:12px;color:#aebed2;margin-top:8px}
+.broker-tag{font-size:12px;color:#aaa;margin-top:8px}
 .status{background:#2563eb22;color:#93c5fd;border:1px solid #2563eb66;padding:9px 14px;border-radius:30px;font-size:12px;font-weight:800}
+
 .split{display:grid;grid-template-columns:1fr 1fr;gap:55px;align-items:center}
 .checklist{display:grid;gap:18px;margin-top:28px}
-.check{display:flex;gap:14px;align-items:flex-start;color:#d5e0ee;font-size:14px;line-height:1.7}
+.check{display:flex;gap:14px;align-items:flex-start;color:#d5d5d5;font-size:14px;line-height:1.7}
 .check b{color:#60a5fa;font-size:18px}
-.info-panel{background:#102847;border:1px solid #ffffff18;border-radius:15px;padding:35px}
+.info-panel{background:#151515;border:1px solid #292929;border-radius:15px;padding:35px}
 .info-panel h3{font-size:24px;margin-top:0}
-.info-panel p{color:#aebed2;line-height:1.8;font-size:14px}
+.info-panel p{color:#aaa;line-height:1.8;font-size:14px}
+
 .faq{max-width:820px;margin:45px auto 0;text-align:left}
-details{background:#102847;border:1px solid #ffffff18;padding:22px;border-radius:9px;margin-bottom:12px}
+details{background:#151515;border:1px solid #292929;padding:22px;border-radius:9px;margin-bottom:12px}
 summary{cursor:pointer;font-weight:700;list-style:none}
 summary::-webkit-details-marker{display:none}
 summary:after{content:"+";float:right;color:#60a5fa;font-size:21px}
 details[open] summary:after{content:"−"}
-details p{color:#aebed2;font-size:14px;line-height:1.8;margin-bottom:0}
-.cta{padding:75px 25px;text-align:center;background:linear-gradient(120deg,#12345d,#102847);border:1px solid #31517a;border-radius:16px}
-.cta p{color:#b6c5d8;line-height:1.8;max-width:570px;margin:15px auto 28px}
+details p{color:#aaa;font-size:14px;line-height:1.8;margin-bottom:0}
+
+.cta{padding:75px 25px;text-align:center;background:linear-gradient(120deg,#191919,#080808);border:1px solid #333;border-radius:16px}
+.cta p{color:#aaa;line-height:1.8;max-width:570px;margin:15px auto 28px}
+
 footer{padding:38px 0;border-top:1px solid #ffffff18;margin-top:80px}
 .footerrow{display:flex;justify-content:space-between;gap:25px;flex-wrap:wrap}
-.footertext{font-size:13px;color:#91a4bd;line-height:1.8;max-width:400px}
-.footerlinks{display:flex;gap:22px;flex-wrap:wrap;color:#b6c5d8;font-size:13px}
+.footertext{font-size:13px;color:#888;line-height:1.8;max-width:400px}
+.footerlinks{display:flex;gap:22px;flex-wrap:wrap;color:#aaa;font-size:13px}
 .footerlinks a:hover{color:#60a5fa}
-.disclaimer{margin-top:28px;padding-top:20px;border-top:1px solid #ffffff15;color:#71849d;font-size:11px;line-height:1.7}
+.disclaimer{margin-top:28px;padding-top:20px;border-top:1px solid #ffffff15;color:#777;font-size:11px;line-height:1.7}
+
 @media(max-width:800px){
 .nav{height:auto;min-height:75px}
 .navlinks{gap:13px}
@@ -119,8 +131,6 @@ h1{letter-spacing:-2px}
 `;
 
 export default function Home() {
-  const [menuOpen, setMenuOpen] = useState(false);
-
   return (
     <>
       <style>{styles}</style>
@@ -181,19 +191,28 @@ export default function Home() {
             </p>
             <div className="grid3">
               <article className="feature">
-                <div className="iconbox">↗</div>
-                <h3>Earn cashback</h3>
-                <p>Receive eligible cashback based on verified broker commissions generated by your trading activity.</p>
+                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?auto=format&fit=crop&w=900&q=85')"}}></div>
+                <div className="feature-content">
+                  <div className="iconbox">↗</div>
+                  <h3>Earn cashback</h3>
+                  <p>Receive eligible cashback based on verified broker commissions generated by your trading activity.</p>
+                </div>
               </article>
               <article className="feature">
-                <div className="iconbox">◎</div>
-                <h3>One wallet</h3>
-                <p>Keep track of your eligible rewards in one convenient Retrade account.</p>
+                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=85')"}}></div>
+                <div className="feature-content">
+                  <div className="iconbox">◎</div>
+                  <h3>One wallet</h3>
+                  <p>Keep track of your eligible rewards in one convenient Retrade account.</p>
+                </div>
               </article>
               <article className="feature">
-                <div className="iconbox">⌁</div>
-                <h3>Clear records</h3>
-                <p>Follow your cashback history and understand the status of your rewards and withdrawals.</p>
+                <div className="feature-image" style={{backgroundImage:"url('https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=900&q=85')"}}></div>
+                <div className="feature-content">
+                  <div className="iconbox">⌁</div>
+                  <h3>Clear records</h3>
+                  <p>Follow your cashback history and understand the status of your rewards and withdrawals.</p>
+                </div>
               </article>
             </div>
           </div>
