@@ -95,51 +95,100 @@ export default function Home() {
         }
 
         .container { width: min(1160px, calc(100% - 48px)); margin: auto; }
+
         .nav {
-          height: 82px; display: flex; align-items: center; justify-content: space-between;
+          height: 82px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
           border-bottom: 1px solid rgba(255,255,255,.08);
         }
-        .logo { display: flex; align-items: center; gap: 10px; font: 800 25px Manrope,sans-serif; letter-spacing: -1.3px; }
-        .logo-mark {
-          width: 34px; height: 34px; display: grid; place-items: center;
-          border-radius: 10px; color: white; background: var(--blue);
-          font-size: 20px; font-weight: 800;
+
+        /* RETRADE LOGO */
+        .brand-logo {
+          display: flex;
+          align-items: center;
+          width: 190px;
+          flex-shrink: 0;
         }
+
+        .brand-logo img {
+          display: block;
+          width: 100%;
+          height: auto;
+          max-height: 58px;
+          object-fit: contain;
+        }
+
         .nav-links { display: flex; align-items: center; gap: 32px; color: #aaa; font-size: 13px; }
         .nav-links a:hover { color: white; }
         .nav-actions { display: flex; align-items: center; gap: 20px; font-size: 13px; }
         .login { color: #ccc; }
+
         .btn {
-          display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-          background: var(--blue); color: white; padding: 14px 21px; border-radius: 7px;
-          font-size: 13px; font-weight: 700; border: 1px solid var(--blue);
-          transition: .2s ease; cursor: pointer;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          background: var(--blue);
+          color: white;
+          padding: 14px 21px;
+          border-radius: 7px;
+          font-size: 13px;
+          font-weight: 700;
+          border: 1px solid var(--blue);
+          transition: .2s ease;
+          cursor: pointer;
         }
+
         .btn:hover { background: #1265ed; transform: translateY(-2px); }
         .btn-outline { background: transparent; border-color: rgba(255,255,255,.24); }
         .btn-outline:hover { background: rgba(255,255,255,.08); border-color: white; }
         .eyebrow { color: #65a0ff; font-size: 11px; font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+
         .hero { padding: 88px 0 95px; position: relative; }
+
         .hero:before {
-          content: ''; position: absolute; width: 650px; height: 500px; right: -170px; top: -80px;
+          content: '';
+          position: absolute;
+          width: 650px;
+          height: 500px;
+          right: -170px;
+          top: -80px;
           background: radial-gradient(ellipse,rgba(20,91,210,.19),transparent 68%);
           pointer-events: none;
         }
-        .hero-grid { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 65px; position: relative; }
+
+        .hero-grid {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          align-items: center;
+          gap: 65px;
+          position: relative;
+        }
+
         h1,h2,h3,p { margin-top: 0; }
+
         h1 {
           font: 800 clamp(43px,6vw,70px)/1.08 Manrope,sans-serif;
-          letter-spacing: -3.7px; margin: 23px 0;
+          letter-spacing: -3.7px;
+          margin: 23px 0;
         }
+
         h1 span { color: #6ca5ff; }
         .hero-copy { color: #aaa; font-size: 16px; line-height: 1.85; max-width: 480px; }
         .hero-actions { display: flex; gap: 13px; margin-top: 32px; flex-wrap: wrap; }
         .hero-note { margin-top: 25px; color: #777; font-size: 11px; }
+
         .hero-visual {
-          position: relative; padding: 24px; border: 1px solid rgba(255,255,255,.12);
-          border-radius: 16px; background: linear-gradient(145deg,#171717,#090909);
+          position: relative;
+          padding: 24px;
+          border: 1px solid rgba(255,255,255,.12);
+          border-radius: 16px;
+          background: linear-gradient(145deg,#171717,#090909);
           box-shadow: 0 30px 90px rgba(0,0,0,.5);
         }
+
         .visual-top { display: flex; justify-content: space-between; align-items: center; color: #aaa; font-size: 11px; }
         .live-dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: #3bd18a; margin-right: 7px; }
         .balance-label { color: #888; font-size: 12px; margin-top: 28px; }
@@ -147,19 +196,32 @@ export default function Home() {
         .balance-sub { font-size: 11px; color: #5bd99a; }
         .chart { width: 100%; height: 145px; margin: 24px 0 10px; }
         .chart svg { width: 100%; height: 100%; overflow: visible; }
+
         .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
         .stat {
-          background: rgba(255,255,255,.045); border: 1px solid rgba(255,255,255,.07);
-          border-radius: 9px; padding: 15px;
+          background: rgba(255,255,255,.045);
+          border: 1px solid rgba(255,255,255,.07);
+          border-radius: 9px;
+          padding: 15px;
         }
+
         .stat small { display: block; color: #888; font-size: 10px; margin-bottom: 8px; }
         .stat strong { font: 700 19px Manrope,sans-serif; }
         .visual-foot { display: flex; justify-content: space-between; color: #777; font-size: 10px; margin-top: 18px; }
+
         .floating {
-          position: absolute; right: -25px; bottom: 45px; padding: 14px 18px;
-          border-radius: 10px; background: #202020; border: 1px solid #343434;
-          box-shadow: 0 12px 35px #0008; font-size: 11px;
+          position: absolute;
+          right: -25px;
+          bottom: 45px;
+          padding: 14px 18px;
+          border-radius: 10px;
+          background: #202020;
+          border: 1px solid #343434;
+          box-shadow: 0 12px 35px #0008;
+          font-size: 11px;
         }
+
         .floating strong { display: block; color: #5bd99a; font-size: 16px; margin-top: 5px; }
 
         .trust-strip { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 25px 0; }
@@ -170,22 +232,38 @@ export default function Home() {
 
         .section { padding: 105px 0; }
         .section-head { max-width: 650px; margin-bottom: 48px; }
+
         .section-head h2 {
           font: 800 clamp(30px,4vw,45px)/1.18 Manrope,sans-serif;
-          letter-spacing: -1.8px; margin: 16px 0;
+          letter-spacing: -1.8px;
+          margin: 16px 0;
         }
+
         .section-head p { color: var(--muted); font-size: 14px; line-height: 1.8; }
         .benefit-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 17px; }
+
         .benefit {
-          min-height: 240px; padding: 28px; border: 1px solid var(--line);
-          border-radius: 12px; background: linear-gradient(145deg,#151515,#0b0b0b);
+          min-height: 240px;
+          padding: 28px;
+          border: 1px solid var(--line);
+          border-radius: 12px;
+          background: linear-gradient(145deg,#151515,#0b0b0b);
           transition: .25s ease;
         }
+
         .benefit:hover { transform: translateY(-5px); border-color: rgba(36,120,255,.55); }
+
         .benefit-icon {
-          width: 43px; height: 43px; display: grid; place-items: center;
-          border-radius: 10px; background: rgba(36,120,255,.13); color: #6ca5ff; font-size: 22px;
+          width: 43px;
+          height: 43px;
+          display: grid;
+          place-items: center;
+          border-radius: 10px;
+          background: rgba(36,120,255,.13);
+          color: #6ca5ff;
+          font-size: 22px;
         }
+
         .benefit-num { color: #666; font-size: 10px; margin-top: 28px; }
         .benefit h3 { font: 700 19px Manrope,sans-serif; margin: 12px 0; }
         .benefit p { color: #929292; font-size: 13px; line-height: 1.8; margin: 0; }
@@ -198,35 +276,66 @@ export default function Home() {
         .step p { color: #929292; font-size: 12px; line-height: 1.8; }
 
         .broker-box {
-          display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 50px;
-          padding: 48px; border-radius: 16px; border: 1px solid var(--line);
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          align-items: center;
+          gap: 50px;
+          padding: 48px;
+          border-radius: 16px;
+          border: 1px solid var(--line);
           background: radial-gradient(circle at 90% 20%,rgba(36,120,255,.12),transparent 38%),#101010;
         }
+
         .broker-box h2 { font: 800 36px Manrope,sans-serif; letter-spacing: -1.5px; margin: 16px 0; }
         .broker-box p { color: #999; line-height: 1.8; font-size: 13px; }
+
         .broker-logo {
-          min-height: 190px; display: grid; place-items: center;
-          border-radius: 12px; background: linear-gradient(145deg,#191919,#090909);
+          min-height: 190px;
+          display: grid;
+          place-items: center;
+          border-radius: 12px;
+          background: linear-gradient(145deg,#191919,#090909);
           border: 1px solid #292929;
         }
+
         .xm-word { font: 800 64px Manrope,sans-serif; letter-spacing: -5px; color: white; }
         .xm-word span { color: #e22d3c; }
         .broker-caption { color: #777; font-size: 10px; margin-top: 9px; letter-spacing: 2px; }
 
         .faq-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .faq-item { border: 1px solid var(--line); border-radius: 9px; background: #101010; padding: 21px; }
-        .faq-item summary { cursor: pointer; list-style: none; font-size: 13px; font-weight: 700; display: flex; justify-content: space-between; gap: 15px; }
+
+        .faq-item {
+          border: 1px solid var(--line);
+          border-radius: 9px;
+          background: #101010;
+          padding: 21px;
+        }
+
+        .faq-item summary {
+          cursor: pointer;
+          list-style: none;
+          font-size: 13px;
+          font-weight: 700;
+          display: flex;
+          justify-content: space-between;
+          gap: 15px;
+        }
+
         .faq-item summary::-webkit-details-marker { display: none; }
         .faq-item summary:after { content: '+'; color: #65a0ff; font-size: 18px; }
         .faq-item[open] summary:after { content: '−'; }
         .faq-item p { color: #999; font-size: 12px; line-height: 1.8; margin: 15px 0 0; }
 
         .cta { padding: 0 0 100px; }
+
         .cta-box {
-          padding: 65px 30px; text-align: center; border-radius: 16px;
+          padding: 65px 30px;
+          text-align: center;
+          border-radius: 16px;
           border: 1px solid rgba(60,130,255,.28);
           background: radial-gradient(ellipse at center,rgba(30,92,190,.2),transparent 65%),#101010;
         }
+
         .cta-box h2 { font: 800 clamp(30px,4vw,44px) Manrope,sans-serif; letter-spacing: -1.7px; margin: 17px 0; }
         .cta-box p { color: #999; font-size: 13px; line-height: 1.8; }
         .cta-box .btn { margin-top: 16px; }
@@ -246,10 +355,14 @@ export default function Home() {
           .steps { grid-template-columns: 1fr 1fr; }
           .broker-box { grid-template-columns: 1fr; padding: 30px; }
         }
+
         @media(max-width:560px) {
           .container { width: min(100% - 34px,1160px); }
           .nav { height: 70px; }
-          .logo { font-size: 22px; }
+
+          .brand-logo { width: 145px; }
+          .brand-logo img { max-height: 48px; }
+
           .nav-actions { gap: 12px; }
           .nav-actions .login { display: none; }
           .nav-actions .btn { padding: 11px 14px; font-size: 11px; }
@@ -277,12 +390,15 @@ export default function Home() {
         }
       `}</style>
 
-      <a href="#" className="brand-logo">
-  <img
-    src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png"
-    alt="Retrade"
-  />
-</a>
+      <div className="rt">
+        <div className="container">
+          <nav className="nav">
+            <a href="#" className="brand-logo">
+              <img
+                src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png"
+                alt="Retrade"
+              />
+            </a>
 
             <div className="nav-links">
               <a href="#benefits">Why Retrade</a>
@@ -478,9 +594,11 @@ export default function Home() {
           <div className="container">
             <div className="footer-top">
               <div>
-                <a href="#" className="logo">
-                  <span className="logo-mark">R</span>
-                  RETRADE
+                <a href="#" className="brand-logo">
+                  <img
+                    src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png"
+                    alt="Retrade"
+                  />
                 </a>
                 <p className="footer-desc">
                   A smarter cashback experience for eligible traders.
