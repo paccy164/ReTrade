@@ -155,11 +155,11 @@ export default function DashboardPage() {
         `}</style>
 
         <div className="loading-brand">
-          re<span>trade</span>
+          Re<span>Trade</span>
         </div>
         <div className="loader" />
         <p className="loading-title">
-          Loading your Retrade dashboard...
+          Loading your ReTrade dashboard...
         </p>
         <p className="loading-subtitle">
           Securely preparing your account
@@ -519,8 +519,6 @@ export default function DashboardPage() {
           margin-top: 12px;
         }
 
-        /* TRADING ACCOUNTS */
-
         .accounts-panel {
           overflow: hidden;
         }
@@ -601,8 +599,6 @@ export default function DashboardPage() {
           font-size: 11px;
           line-height: 1.7;
         }
-
-        /* TRANSACTIONS */
 
         .transaction-panel {
           overflow: hidden;
@@ -708,8 +704,6 @@ export default function DashboardPage() {
             padding: 28px;
           }
         }
-
-        /* MOBILE LAYOUT */
 
         @media(max-width: 700px) {
           .topbar {
@@ -886,8 +880,6 @@ export default function DashboardPage() {
             font-size: 11px;
           }
 
-          /* Accounts mobile */
-
           .accounts-header {
             flex-direction: column;
             gap: 12px;
@@ -928,8 +920,6 @@ export default function DashboardPage() {
             font-size: 10px;
             padding: 12px;
           }
-
-          /* Transactions mobile */
 
           .transaction-panel {
             padding: 17px 13px;
@@ -1009,7 +999,7 @@ export default function DashboardPage() {
 
       <header className="topbar">
         <div className="brand">
-          re<span>trade</span>
+          Re<span>Trade</span>
         </div>
 
         <div className="top-right">
@@ -1068,14 +1058,12 @@ export default function DashboardPage() {
               </h1>
 
               <p>
-                Welcome back. Here's your Retrade account overview.
+                Welcome back. Here's your ReTrade account overview.
               </p>
             </div>
 
             <div className="date-label">RETRADE ACCOUNT</div>
           </div>
-
-          {/* OVERVIEW */}
 
           {activeTab === "overview" && (
             <>
@@ -1109,7 +1097,7 @@ export default function DashboardPage() {
                 <div className="panel">
                   <h2>My Wallet</h2>
                   <p className="panel-description">
-                    Your combined Retrade wallet balance.
+                    Your combined ReTrade wallet balance.
                   </p>
                   <div className="wallet-value">$0.00</div>
                   <div className="wallet-caption">
@@ -1145,8 +1133,6 @@ export default function DashboardPage() {
               </div>
             </>
           )}
-
-          {/* REFERRALS */}
 
           {activeTab === "referrals" && (
             <>
@@ -1218,15 +1204,13 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* TRADING ACCOUNTS */}
-
           {activeTab === "accounts" && (
             <div className="panel accounts-panel">
               <div className="accounts-header">
                 <div>
                   <h2>Connected Trading Accounts</h2>
                   <p>
-                    Manage your eligible broker accounts connected to Retrade.
+                    Manage your eligible broker accounts connected to ReTrade.
                   </p>
                 </div>
                 <div className="accounts-badge">0 Connected</div>
@@ -1236,21 +1220,19 @@ export default function DashboardPage() {
                 <div className="accounts-empty-icon">◎</div>
                 <h3>No trading accounts yet</h3>
                 <p>
-                  You haven't connected any trading accounts to Retrade.
+                  You haven't connected any trading accounts to ReTrade.
                   Your eligible broker accounts will appear here once
                   connected and verified.
                 </p>
               </div>
 
               <div className="accounts-info">
-                <strong>Account security:</strong> Retrade does not need
+                <strong>Account security:</strong> ReTrade does not need
                 your MT4 or MT5 trading password or investor password
                 to display your connected account information.
               </div>
             </div>
           )}
-
-          {/* TRANSACTIONS */}
 
           {activeTab === "transactions" && (
             <div className="panel transaction-panel">
@@ -1293,7 +1275,7 @@ export default function DashboardPage() {
           )}
 
           <div className="footer-note">
-            © Retrade. All rights reserved.
+            © ReTrade. All rights reserved.
           </div>
         </section>
       </div>
