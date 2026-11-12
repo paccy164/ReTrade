@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 
@@ -60,7 +61,6 @@ export default function DashboardLayout({
           flex: 1;
           position: relative;
         }
-        /* Sidebar Desktop */
         .retrade-sidebar {
           width: 260px;
           background-color: #111722;
@@ -75,17 +75,11 @@ export default function DashboardLayout({
           transition: transform 0.3s ease;
         }
         .sidebar-brand {
-          padding: 24px;
-          font-size: 22px;
-          font-weight: 900;
-          letter-spacing: 1px;
+          padding: 20px 24px;
           border-bottom: 1px solid #1e293b;
           display: flex;
           align-items: center;
           justify-content: space-between;
-        }
-        .sidebar-brand span {
-          color: #2878f0;
         }
         .sidebar-nav {
           padding: 20px 12px;
@@ -116,7 +110,6 @@ export default function DashboardLayout({
           color: #ffffff;
           box-shadow: 0 4px 12px rgba(40, 120, 240, 0.3);
         }
-        /* Main Content Wrapper */
         .retrade-main-content {
           flex: 1;
           margin-left: 260px;
@@ -124,7 +117,6 @@ export default function DashboardLayout({
           flex-direction: column;
           min-width: 0;
         }
-        /* Top Header */
         .retrade-header {
           height: 70px;
           background-color: #111722;
@@ -181,12 +173,10 @@ export default function DashboardLayout({
           background: #7f1d1d;
           color: #ffffff;
         }
-        /* Content Area */
         .content-container {
           padding: 32px;
           flex: 1;
         }
-        /* Mobile Overlay */
         .mobile-overlay {
           display: none;
           position: fixed;
@@ -221,17 +211,24 @@ export default function DashboardLayout({
       `}</style>
 
       <div className="retrade-body">
-        {/* Mobile Sidebar Backdrop */}
         <div 
           className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`}
           onClick={() => setMobileMenuOpen(false)}
         />
 
-        {/* Sidebar */}
         <aside className={`retrade-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="sidebar-brand">
-            RE<span>TRADE</span>
-            <span style={{ fontSize: '11px', background: '#1e293b', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8' }}>PRO</span>
+            <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+              <Image 
+                src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png" 
+                alt="ReTrade Logo" 
+                width={130} 
+                height={35} 
+                style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
+                priority
+              />
+            </Link>
+            <span style={{ fontSize: '10px', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>PRO</span>
           </div>
           <nav className="sidebar-nav">
             {navItems.map((item) => {
@@ -251,7 +248,6 @@ export default function DashboardLayout({
           </nav>
         </aside>
 
-        {/* Main Content */}
         <div className="retrade-main-content">
           <header className="retrade-header">
             <div className="header-left">
