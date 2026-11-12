@@ -15,17 +15,20 @@ type Tab =
 const LOGO_URL =
   "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
-const BROKERS = [
+const brokers = [
   {
-    id: "XM",
     name: "XM",
-    image: "https://logo.clearbit.com/xm.com",
-    description: "Register or access your XM trading account.",
-    link: "https://www.xm.com/",
-    code: "XM",
-    availability: "New and existing clients",
+    logo: "https://www.google.com/s2/favicons?domain=xm.com&sz=128",
   },
   {
+    name: "HFM",
+    logo: "https://www.google.com/s2/favicons?domain=hfm.com&sz=128",
+  },
+  {
+    name: "JustMarkets",
+    logo: "https://www.google.com/s2/favicons?domain=justmarkets.com&sz=128",
+  },
+{
     id: "HFM",
     name: "HFM",
     image: "https://logo.clearbit.com/hfm.com",
