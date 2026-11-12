@@ -207,7 +207,7 @@ export default function Home() {
         @media(max-width: 950px) {
           .hero { gap: 30px; }
           .benefit-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); }
-          .nav-links { gap: 15px; }
+          .nav-links { gap: 10px; }
           .broker-panel { gap: 25px; padding: 30px; }
         }
         @media(max-width: 700px) {
