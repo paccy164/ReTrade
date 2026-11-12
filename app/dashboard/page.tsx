@@ -547,7 +547,7 @@ if (loading) {
         .table {
           width: 100%;
           border-collapse: collapse;
-          min-width: 450px;
+          min-width: 17px;
         }
 
         .table th {
