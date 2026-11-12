@@ -7,7 +7,7 @@ import { createClient } from "../../lib/supabase/client";
 type Tab = "overview" | "accounts" | "transactions" | "referrals";
 
 const LOGO_URL =
-  "https://res.cloudinary.com/dtz0urit6/image/upload/q_auto:good,f_jpg/cloudinary-tools-uploads/j0pisgjqiohus12nsqm3";
+  "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
@@ -83,9 +83,9 @@ export default function DashboardPage() {
             gap: 18px;
           }
           .loading-logo {
-            width: 170px;
-            max-width: 65vw;
-            height: 48px;
+            width: 220px;
+            max-width: 75vw;
+            height: 75px;
             object-fit: contain;
           }
           .loading-spinner {
@@ -131,21 +131,23 @@ export default function DashboardPage() {
         }
 
         .top-header {
-          height: 68px;
-          background: #0b0f1a;
+          min-height: 82px;
+          background: #ffffff;
+          border-bottom: 1px solid #e5e7eb;
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 0 5%;
-          color: white;
+          color: #111827;
         }
 
         .logo-image {
-          height: 43px;
+          height: 62px;
           width: auto;
-          max-width: 175px;
+          max-width: 240px;
           object-fit: contain;
           display: block;
+          background: transparent;
         }
 
         .header-right {
@@ -156,13 +158,13 @@ export default function DashboardPage() {
 
         .user-email {
           font-size: 13px;
-          color: #cbd5e1;
+          color: #64748b;
         }
 
         .logout-button {
-          border: 1px solid #374151;
+          border: 1px solid #d1d5db;
           background: transparent;
-          color: white;
+          color: #111827;
           padding: 9px 15px;
           border-radius: 7px;
           cursor: pointer;
@@ -170,7 +172,7 @@ export default function DashboardPage() {
         }
 
         .logout-button:hover {
-          background: #1f2937;
+          background: #f4f6f9;
         }
 
         .logout-button:disabled {
@@ -352,6 +354,40 @@ export default function DashboardPage() {
           background: #10449f;
         }
 
+        .referral-details {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 15px;
+          margin-top: 22px;
+        }
+
+        .referral-rule {
+          background: #f8fafc;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 18px;
+        }
+
+        .referral-rule span {
+          display: block;
+          color: #64748b;
+          font-size: 12px;
+          margin-bottom: 8px;
+        }
+
+        .referral-rule strong {
+          display: block;
+          color: #1553bd;
+          font-size: 25px;
+        }
+
+        .referral-note {
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.7;
+          margin-top: 18px;
+        }
+
         .dashboard-footer {
           text-align: center;
           padding: 20px;
@@ -395,13 +431,13 @@ export default function DashboardPage() {
 
         @media (max-width: 520px) {
           .top-header {
-            height: 62px;
+            min-height: 72px;
             padding: 0 4%;
           }
 
           .logo-image {
-            height: 35px;
-            max-width: 140px;
+            height: 50px;
+            max-width: 180px;
           }
 
           .header-right {
@@ -436,6 +472,10 @@ export default function DashboardPage() {
 
           .content-card {
             padding: 16px;
+          }
+
+          .referral-details {
+            grid-template-columns: 1fr;
           }
         }
       `}</style>
@@ -569,12 +609,37 @@ export default function DashboardPage() {
           {activeTab === "referrals" && (
             <div className="content-card">
               <h2 className="section-title">Referral Program</h2>
+
+              <p className="referral-note">
+                Earn rewards when clients you refer generate eligible,
+                verified company profit through their trading activity.
+              </p>
+
+              <div className="referral-details">
+                <div className="referral-rule">
+                  <span>Referral commission</span>
+                  <strong>10%</strong>
+                </div>
+
+                <div className="referral-rule">
+                  <span>Maximum lifetime earnings</span>
+                  <strong>$500</strong>
+                </div>
+              </div>
+
+              <p className="referral-note">
+                Your reward is calculated from verified company profit,
+                not from the referred client's cashback. Reversed or
+                invalidated company profit is excluded. The $500 limit
+                applies to each referrer over their lifetime.
+              </p>
+
               <div className="empty-state">
                 <div className="empty-icon">♧</div>
                 <h3>Your referrals will appear here</h3>
                 <p>
-                  Track your referred clients and eligible referral
-                  rewards from this section.
+                  Referral activity and eligible rewards will appear
+                  here once they are recorded and verified.
                 </p>
               </div>
             </div>
