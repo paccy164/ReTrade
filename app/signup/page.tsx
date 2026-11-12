@@ -1,4 +1,4 @@
-'v client';
+'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -33,7 +33,6 @@ export default function SignUpPage() {
         return;
       }
 
-      // Niba byagenze neza, ahita ajya muri dashboard cyangwa asabwa kwemeza email
       router.push('/dashboard');
     } catch (err: any) {
       setError('An unexpected error occurred. Please try again.');
