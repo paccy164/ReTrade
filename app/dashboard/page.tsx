@@ -772,7 +772,7 @@ export default function DashboardPage() {
           }
 
           .transaction-empty-icon {
-            font-size: 27px;
+            font-size: 15px;
             margin-bottom: 12px;
           }
 
