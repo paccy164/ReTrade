@@ -2,22 +2,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 
 type Tab = "overview" | "accounts" | "transactions" | "referrals";
 
-export default function DashboardPage() {
-  const router = useRouter();
-  const supabase = createClient();
+const LOGO_URL =
+  "https://res.cloudinary.com/dtz0urit6/image/upload/q_auto:good,f_jpg/cloudinary-tools-uploads/j0pisgjqiohus12nsqm3";
 
+export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
+    const supabase = createClient();
     let mounted = true;
 
     async function checkUser() {
@@ -25,9 +24,7 @@ export default function DashboardPage() {
         const { data, error } = await supabase.auth.getUser();
 
         if (error || !data.user) {
-          if (mounted) {
-            window.location.href = "/login";
-          }
+          if (mounted) window.location.href = "/login";
           return;
         }
 
@@ -36,9 +33,7 @@ export default function DashboardPage() {
           setLoading(false);
         }
       } catch {
-        if (mounted) {
-          window.location.href = "/login";
-        }
+        if (mounted) window.location.href = "/login";
       }
     }
 
@@ -47,12 +42,13 @@ export default function DashboardPage() {
     return () => {
       mounted = false;
     };
-  }, [supabase]);
+  }, []);
 
   async function handleSignOut() {
     setSigningOut(true);
 
     try {
+      const supabase = createClient();
       await supabase.auth.signOut();
       window.location.href = "/login";
     } catch {
@@ -70,9 +66,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="dashboard-loading">
-        <div className="loading-logo">
-          RET<span>RADE</span>
-        </div>
+        <img src={LOGO_URL} alt="ReTrade" className="loading-logo" />
         <div className="loading-spinner" />
         <p>Loading your dashboard...</p>
 
@@ -89,12 +83,10 @@ export default function DashboardPage() {
             gap: 18px;
           }
           .loading-logo {
-            font-size: 25px;
-            font-weight: 800;
-            color: #0b0f1a;
-          }
-          .loading-logo span {
-            color: #1553bd;
+            width: 170px;
+            max-width: 65vw;
+            height: 48px;
+            object-fit: contain;
           }
           .loading-spinner {
             width: 30px;
@@ -120,13 +112,11 @@ export default function DashboardPage() {
         * {
           box-sizing: border-box;
         }
-
         body {
           margin: 0;
           font-family: Arial, sans-serif;
           background: #f4f6f9;
         }
-
         button,
         a {
           font-family: inherit;
@@ -150,14 +140,12 @@ export default function DashboardPage() {
           color: white;
         }
 
-        .logo {
-          font-size: 23px;
-          font-weight: 800;
-          letter-spacing: -0.7px;
-        }
-
-        .logo span {
-          color: #1553bd;
+        .logo-image {
+          height: 43px;
+          width: auto;
+          max-width: 175px;
+          object-fit: contain;
+          display: block;
         }
 
         .header-right {
@@ -183,6 +171,11 @@ export default function DashboardPage() {
 
         .logout-button:hover {
           background: #1f2937;
+        }
+
+        .logout-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
         }
 
         .dashboard-layout {
@@ -406,8 +399,9 @@ export default function DashboardPage() {
             padding: 0 4%;
           }
 
-          .logo {
-            font-size: 20px;
+          .logo-image {
+            height: 35px;
+            max-width: 140px;
           }
 
           .header-right {
@@ -447,9 +441,11 @@ export default function DashboardPage() {
       `}</style>
 
       <header className="top-header">
-        <div className="logo">
-          RET<span>RADE</span>
-        </div>
+        <img
+          src={LOGO_URL}
+          alt="ReTrade Logo"
+          className="logo-image"
+        />
 
         <div className="header-right">
           <span className="user-email">{email}</span>
@@ -545,7 +541,6 @@ export default function DashboardPage() {
           {activeTab === "accounts" && (
             <div className="content-card">
               <h2 className="section-title">Trading Accounts</h2>
-
               <div className="empty-state">
                 <div className="empty-icon">▣</div>
                 <h3>No trading accounts connected</h3>
@@ -560,7 +555,6 @@ export default function DashboardPage() {
           {activeTab === "transactions" && (
             <div className="content-card">
               <h2 className="section-title">Transactions</h2>
-
               <div className="empty-state">
                 <div className="empty-icon">⇄</div>
                 <h3>No transactions yet</h3>
@@ -575,7 +569,6 @@ export default function DashboardPage() {
           {activeTab === "referrals" && (
             <div className="content-card">
               <h2 className="section-title">Referral Program</h2>
-
               <div className="empty-state">
                 <div className="empty-icon">♧</div>
                 <h3>Your referrals will appear here</h3>
