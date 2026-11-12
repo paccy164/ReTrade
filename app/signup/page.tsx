@@ -1,200 +1,160 @@
+'v client';
 
-"use client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { createClient } from '../../lib/supabase/client';
 
-import { useState } from "react";
-import Link from "next/link";
-import { createClient } from "../../lib/supabase/client";
-
-export default function SignupPage() {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+export default function SignUpPage() {
+  const router = useRouter();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
-  async function handleSignup(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSignUp(e: React.FormEvent) {
     e.preventDefault();
-    setMessage("");
-    setError("");
-
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.");
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
     setLoading(true);
+    setError('');
 
     try {
       const supabase = createClient();
-
-      const { data, error: signupError } = await supabase.auth.signUp({
+      const { error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: name },
-          emailRedirectTo: `${window.location.origin}/login`,
+          emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
-      if (signupError) throw signupError;
-
-      if (data.session) {
-        setMessage("Your account has been created. You can now log in.");
-      } else {
-        setMessage("Account created! Please check your email to confirm your address before logging in.");
+      if (signUpError) {
+        setError(signUpError.message);
+        setLoading(false);
+        return;
       }
 
-      setName("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Something went wrong. Please try again."
-      );
-    } finally {
+      // Niba byagenze neza, ahita ajya muri dashboard cyangwa asabwa kwemeza email
+      router.push('/dashboard');
+    } catch (err: any) {
+      setError('An unexpected error occurred. Please try again.');
       setLoading(false);
     }
   }
 
   return (
-    <main className="auth-page">
-      <style>{`
-        * { box-sizing: border-box; }
-        .auth-page {
-          min-height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 35px 18px;
-          background: radial-gradient(ellipse at 50% 0%, #17345d 0%, #090d15 48%, #07090d 100%);
-          color: #f7f9fc;
-          font-family: Arial, sans-serif;
-        }
-        .auth-card {
-          width: 100%;
-          max-width: 440px;
-          padding: 38px;
-          background: #111925;
-          border: 1px solid #ffffff18;
-          border-radius: 20px;
-          box-shadow: 0 25px 70px #0008;
-        }
-        .auth-logo { text-align: center; margin-bottom: 30px; }
-        .auth-logo img { width: 190px; height: 75px; object-fit: contain; }
-        .auth-card h1 { font-size: 28px; text-align: center; margin-bottom: 10px; }
-        .subtitle { text-align: center; color: #94a3b8; font-size: 13px; margin-bottom: 28px; line-height: 1.6; }
-        .field { margin-bottom: 17px; }
-        .field label { display: block; color: #cbd5e1; font-size: 12px; font-weight: 700; margin-bottom: 8px; }
-        .field input {
-          width: 100%; padding: 14px 13px; border-radius: 9px;
-          border: 1px solid #ffffff20; background: #080e18;
-          color: white; outline: none; font-size: 14px;
-        }
-        .field input:focus { border-color: #247bff; }
-        .submit {
-          width: 100%; padding: 15px; border: 0; border-radius: 9px;
-          background: #247bff; color: white; font-size: 14px;
-          font-weight: 800; cursor: pointer; margin-top: 8px;
-        }
-        .submit:disabled { opacity: .6; cursor: not-allowed; }
-        .message, .error {
-          padding: 12px; border-radius: 8px; font-size: 12px;
-          line-height: 1.6; margin-bottom: 16px;
-        }
-        .message { background: #123a2b; color: #8ce5b8; }
-        .error { background: #451e25; color: #ff9ba8; }
-        .auth-bottom { text-align: center; color: #94a3b8; font-size: 13px; margin-top: 24px; }
-        .auth-bottom a { color: #65a5ff; font-weight: 700; text-decoration: none; }
-        .back { display: block; text-align: center; color: #94a3b8; font-size: 12px; margin-top: 22px; text-decoration: none; }
-        @media(max-width: 480px) {
-          .auth-card { padding: 28px 21px; }
-        }
-      `}</style>
-
-      <div className="auth-card">
-        <div className="auth-logo">
-          <Link href="/">
-            <img
-              src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png"
-              alt="Retrade"
-            />
-          </Link>
+    <div style={{
+      minHeight: '100vh',
+      backgroundColor: '#080B12',
+      color: '#ffffff',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px',
+      fontFamily: 'Arial, sans-serif',
+    }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '420px',
+        backgroundColor: '#111722',
+        border: '1px solid #1e293b',
+        borderRadius: '16px',
+        padding: '32px',
+        boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+      }}>
+        {/* Logo & Brand */}
+        <div style={{ textAlign: 'center', marginBottom: '28px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ width: '32px', height: '32px', background: '#fff', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+              <span style={{ color: '#000', fontWeight: '900', fontSize: '18px', lineHeight: 1 }}>R</span>
+              <span style={{ width: '7px', height: '7px', background: '#ef4444', borderRadius: '50%', position: 'absolute', bottom: '4px', left: '4px' }}></span>
+            </div>
+            <span style={{ fontSize: '24px', fontWeight: 900, letterSpacing: '1px', color: '#ffffff' }}>Re<span style={{ color: '#2878f0' }}>Trade</span></span>
+          </div>
+          <h1 style={{ fontSize: '20px', fontWeight: 700, margin: '0 0 8px 0', color: '#ffffff' }}>Create your account</h1>
+          <p style={{ color: '#98a5b8', fontSize: '14px', margin: 0 }}>Start tracking your broker cashback & rewards</p>
         </div>
 
-        <h1>Create your account</h1>
-        <p className="subtitle">
-          Join Retrade and start earning cashback on eligible trading activity.
-        </p>
-
-        {message && <div className="message">{message}</div>}
-        {error && <div className="error">{error}</div>}
-
-        <form onSubmit={handleSignup}>
-          <div className="field">
-            <label>Full name</label>
-            <input
-              type="text"
-              placeholder="Enter your full name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-            />
+        {error && (
+          <div style={{ background: '#7f1d1d', border: '1px solid #ef4444', color: '#fca5a5', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '20px' }}>
+            {error}
           </div>
+        )}
 
-          <div className="field">
-            <label>Email address</label>
-            <input
+        <form onSubmit={handleSignUp} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#cbd5e1', marginBottom: '6px' }}>
+              Email Address
+            </label>
+            <input 
               type="email"
-              placeholder="you@example.com"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              placeholder="trader@example.com"
+              style={{
+                width: '100%',
+                background: '#080B12',
+                border: '1px solid #1e293b',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                color: '#ffffff',
+                fontSize: '14px',
+                outline: 'none',
+              }}
             />
           </div>
 
-          <div className="field">
-            <label>Password</label>
-            <input
+          <div>
+            <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: '#cbd5e1', marginBottom: '6px' }}>
+              Password
+            </label>
+            <input 
               type="password"
-              placeholder="At least 8 characters"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              minLength={8}
-              required
+              placeholder="••••••••"
+              style={{
+                width: '100%',
+                background: '#080B12',
+                border: '1px solid #1e293b',
+                borderRadius: '8px',
+                padding: '12px 16px',
+                color: '#ffffff',
+                fontSize: '14px',
+                outline: 'none',
+              }}
             />
           </div>
 
-          <div className="field">
-            <label>Confirm password</label>
-            <input
-              type="password"
-              placeholder="Enter password again"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              minLength={8}
-              required
-            />
-          </div>
-
-          <button className="submit" type="submit" disabled={loading}>
-            {loading ? "Creating account..." : "Create account →"}
+          <button 
+            type="submit"
+            disabled={loading}
+            style={{
+              width: '100%',
+              background: '#2878f0',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '8px',
+              padding: '12px',
+              fontSize: '15px',
+              fontWeight: 700,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              marginTop: '8px',
+              transition: 'background 0.2s',
+            }}
+          >
+            {loading ? 'Creating account...' : 'Sign Up'}
           </button>
         </form>
 
-        <div className="auth-bottom">
-          Already have an account? <Link href="/login">Log in</Link>
-        </div>
-
-        <Link href="/" className="back">← Back to Retrade</Link>
+        <p style={{ textAlign: 'center', color: '#98a5b8', fontSize: '13px', marginTop: '24px', margin: '24px 0 0 0' }}>
+          Already have an account?{' '}
+          <Link href="/login" style={{ color: '#2878f0', textDecoration: 'none', fontWeight: 600 }}>
+            Log In
+          </Link>
+        </p>
       </div>
-    </main>
+    </div>
   );
 }
