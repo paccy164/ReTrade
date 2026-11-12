@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState } from "react";
@@ -207,24 +208,14 @@ export default function Home() {
         @media(max-width: 950px) {
           .hero { gap: 30px; }
           .benefit-grid, .steps-grid { grid-template-columns: repeat(2, 1fr); }
-          .nav-links { gap: 10px; }
+          .nav-links { gap: 15px; }
           .broker-panel { gap: 25px; padding: 30px; }
         }
         @media(max-width: 700px) {
-          .container {
-  width: calc(100% - 16px);
-  margin-left: 8px;
-  margin-right: 8px;
-}
-          .brand-logo {
-  width: 194px;
-  height: 62px;
-}
-
-.brand-logo img {
-  transform: scale(2.18);
-  transform-origin: left center;
-}
+          .container { width: calc(100% - 36px); }
+          .navbar { height: 75px; }
+          .brand-logo { width: 155px; height: 55px; }
+          .brand-logo img { transform: scale(1.1); }
           .nav-links { display: none; }
           .nav-actions { gap: 12px; font-size: 12px; }
           .nav-actions .btn { padding: 10px 13px; }
@@ -241,13 +232,10 @@ export default function Home() {
           .floating { display: none; }
         }
         @media(max-width: 420px) {
-          .container { width: calc(100% - 35px); }
-          .brand-logo {
-  width: 165px;
-  height: 58px;
-}
+          .container { width: calc(100% - 30px); }
+          .brand-logo { width: 80px; }
           .nav-actions { gap: 9px; }
-          .nav-actions .btn { padding: 9px 10px; font-size: 12px; }
+          .nav-actions .btn { padding: 9px 10px; font-size: 11px; }
           .benefit-grid, .steps-grid { grid-template-columns: 1fr; }
           .broker-features { gap: 9px; }
           .broker-feature { padding: 12px; }
@@ -301,7 +289,7 @@ export default function Home() {
                 <span className="status">● Active</span>
               </div>
               <div className="balance-label">Illustrative cashback balance</div>
-              <div className="balance">$1,622.80</div>
+              <div className="balance">$125.80</div>
               <div className="balance-change">↑ Example wallet activity</div>
               <div className="chart-area">
                 <div className="chart-caption">
