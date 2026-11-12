@@ -217,12 +217,12 @@ export default function Home() {
   margin-right: 8px;
 }
           .brand-logo {
-  width: 198px;
-  height: 72px;
+  width: 193px;
+  height: 62px;
 }
 
 .brand-logo img {
-  transform: scale(1.18);
+  transform: scale(0.45);
   transform-origin: left center;
 }
           .nav-links { display: none; }
