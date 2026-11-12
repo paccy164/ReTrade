@@ -1,21 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const pathname = usePathname();
-  const router = useRouter();
+export default function DashboardOverview() {
+  const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState('');
+  const [stats] = useState({
+    balance: 0,
+    totalCashback: 0,
+    pendingCashback: 0,
+    withdrawn: 0,
+  });
 
   useEffect(() => {
-    async function getUser() {
+    async function loadUser() {
       try {
         const supabase = createClient();
         const { data } = await supabase.auth.getUser();
@@ -23,175 +22,68 @@ export default function DashboardLayout({
           setUserEmail(data.user.email);
         }
       } catch (err) {
-        console.error('Auth error:', err);
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
       }
     }
-    getUser();
+    loadUser();
   }, []);
 
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.replace('/login');
-    router.refresh();
+  if (loading) {
+    return (
+      <div style={{ color: '#98a5b8', textAlign: 'center', padding: '40px', fontSize: '14px' }}>
+        Loading dashboard...
+      </div>
+    );
   }
 
-  // Amabuto 5 ya mobile bottom navigation n'ya desktop sidebar
-  const navItems = [
-    { name: 'Home', href: '/dashboard', icon: '🏠' },
-    { name: 'Brokers', href: '/dashboard/brokers', icon: '📊' },
-    { name: 'Add Linking', href: '/dashboard/accounts', icon: '🔗' },
-    { name: 'Referral', href: '/dashboard/referrals', icon: '👥' },
-    { name: 'Payment', href: '/dashboard/withdrawals', icon: '💳' },
-  ];
-
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#080B12', color: '#ffffff', display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ display: 'flex', flex: 1, position: 'relative', paddingBottom: '70px' }} className="md:pb-0">
-        
-        {/* Sidebar Desktop */}
-        <aside style={{
-          width: '260px',
-          backgroundColor: '#111722',
-          borderRight: '1px solid #1e293b',
-          display: 'none',
-          flexDirection: 'column',
-          position: 'fixed',
-          top: 0,
-          bottom: 0,
-          left: 0,
-          zIndex: 40,
-        }} className="md:flex">
-          
-          <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
-              <div style={{ width: '28px', height: '28px', background: '#fff', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <span style={{ color: '#000', fontWeight: '900', fontSize: '16px', lineHeight: 1 }}>R</span>
-                <span style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', position: 'absolute', bottom: '4px', left: '4px' }}></span>
-              </div>
-              <span style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '1px', color: '#ffffff' }}>Re<span style={{ color: '#2878f0' }}>Trade</span></span>
-            </Link>
-            <span style={{ fontSize: '10px', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>PRO</span>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+      {/* Welcome Banner */}
+      <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '24px' }}>
+        <span style={{ color: '#2878f0', fontSize: '11px', fontWeight: 700, letterSpacing: '1px', textTransform: 'uppercase' }}>
+          Trader Dashboard
+        </span>
+        <h1 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', margin: '6px 0 8px 0' }}>
+          Welcome back, Trader
+        </h1>
+        <p style={{ color: '#98a5b8', fontSize: '14px', margin: 0 }}>
+          {userEmail} • XM Broker Ecosystem Connected
+        </p>
+      </div>
 
-          <nav style={{ padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' }}>
-            {navItems.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '12px',
-                    padding: '12px 16px',
-                    borderRadius: '8px',
-                    fontSize: '14px',
-                    fontWeight: 500,
-                    color: isActive ? '#ffffff' : '#98a5b8',
-                    backgroundColor: isActive ? '#2878f0' : 'transparent',
-                    textDecoration: 'none',
-                    boxShadow: isActive ? '0 4px 12px rgba(40, 120, 240, 0.3)' : 'none',
-                  }}
-                >
-                  <span style={{ fontSize: '18px' }}>{item.icon}</span>
-                  <span>{item.name}</span>
-                </Link>
-              );
-            })}
-          </nav>
-        </aside>
-
-        {/* Main Content Area */}
-        <div style={{ flex: 1, marginLeft: '0', display: 'flex', flexDirection: 'column', minWidth: '0' }} className="md:ml-[260px]">
-          
-          <header style={{
-            height: '70px',
-            backgroundColor: '#111722',
-            borderBottom: '1px solid #1e293b',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '0 24px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 30,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <div style={{ width: '24px', height: '24px', background: '#fff', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }} className="md:hidden">
-                <span style={{ color: '#000', fontWeight: '900', fontSize: '14px' }}>R</span>
-                <span style={{ width: '5px', height: '5px', background: '#ef4444', borderRadius: '50%', position: 'absolute', bottom: '3px', left: '3px' }}></span>
-              </div>
-              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
-                Trader Workspace
-              </h2>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {userEmail && (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#080B12', padding: '6px 12px', borderRadius: '20px', border: '1px solid #1e293b', fontSize: '13px', color: '#cbd5e1' }} className="hidden sm:flex">
-                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></span>
-                  <span>{userEmail}</span>
-                </div>
-              )}
-              <button 
-                onClick={handleLogout}
-                style={{ background: '#1e293b', color: '#f87171', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
-              >
-                Log Out
-              </button>
-            </div>
-          </header>
-
-          <main style={{ padding: '24px', flex: '1' }}>
-            {children}
-          </main>
+      {/* Financial Summary Cards */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
+        <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '20px' }}>
+          <p style={{ color: '#98a5b8', fontSize: '13px', margin: '0 0 8px 0' }}>Available Balance</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#22c55e', margin: 0 }}>${stats.balance.toFixed(2)}</h2>
         </div>
+        <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '20px' }}>
+          <p style={{ color: '#98a5b8', fontSize: '13px', margin: '0 0 8px 0' }}>Total Cashback</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', margin: 0 }}>${stats.totalCashback.toFixed(2)}</h2>
+        </div>
+        <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '20px' }}>
+          <p style={{ color: '#98a5b8', fontSize: '13px', margin: '0 0 8px 0' }}>Pending Cashback</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#38bdf8', margin: 0 }}>${stats.pendingCashback.toFixed(2)}</h2>
+        </div>
+        <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '20px' }}>
+          <p style={{ color: '#98a5b8', fontSize: '13px', margin: '0 0 8px 0' }}>Total Withdrawn</p>
+          <h2 style={{ fontSize: '28px', fontWeight: 700, color: '#ffffff', margin: 0 }}>${stats.withdrawn.toFixed(2)}</h2>
+        </div>
+      </div>
 
-        {/* Mobile Bottom Navigation Bar (Nk'uko wabisabye) */}
-        <nav style={{
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: '65px',
-          backgroundColor: '#111722',
-          borderTop: '1px solid #1e293b',
-          display: 'flex',
-          justifyContent: 'space-around',
-          alignItems: 'center',
-          zIndex: 50,
-          paddingBottom: 'env(safe-area-inset-bottom)',
-        }} className="md:hidden">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItem: 'center',
-                  justifyContent: 'center',
-                  textDecoration: 'none',
-                  color: isActive ? '#2878f0' : '#98a5b8',
-                  fontSize: '11px',
-                  fontWeight: isActive ? '700' : '500',
-                  gap: '4px',
-                  flex: 1,
-                  textAlign: 'center',
-                  padding: '6px 0',
-                }}
-              >
-                <span style={{ fontSize: '20px', lineHeight: 1 }}>{item.icon}</span>
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
-        </nav>
-
+      {/* Connected Trading Accounts */}
+      <div style={{ background: '#111722', border: '1px solid #1e293b', borderRadius: '12px', padding: '24px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <h3 style={{ fontSize: '18px', fontWeight: 700, color: '#ffffff', margin: 0 }}>Connected Trading Accounts</h3>
+          <Link href="/dashboard/accounts" style={{ background: '#2878f0', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, textDecoration: 'none' }}>
+            + Link Account
+          </Link>
+        </div>
+        <p style={{ color: '#98a5b8', fontSize: '14px', margin: 0 }}>
+          No trading accounts linked yet. Connect your broker account to start tracking commissions.
+        </p>
       </div>
     </div>
   );
