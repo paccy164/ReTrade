@@ -54,23 +54,126 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
-    return (
-      <main className="loading-screen">
-        <div className="loader" />
-        <p>Loading your Retrade dashboard...</p>
-        <style>{`
-          .loading-screen {
-            min-height: 100vh;
-            background: #080b11;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 18px;
-            font-family: Arial, sans-serif;
-          }
+  
+if (loading) {
+  return (
+    <main className="loading-screen">
+      <style>{`
+        * {
+          box-sizing: border-box;
+        }
+
+        html, body {
+          margin: 0 !important;
+          padding: 0 !important;
+          width: 100%;
+          min-height: 100%;
+          background: #080b11 !important;
+        }
+
+        .loading-screen {
+          position: fixed;
+          inset: 0;
+          width: 100%;
+          min-height: 100vh;
+          min-height: 100dvh;
+          margin: 0;
+          padding: 24px;
+          background: #080b11;
+          color: white;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          gap: 20px;
+          font-family: Arial, sans-serif;
+          overflow: hidden;
+        }
+
+        .loading-brand {
+          font-size: 30px;
+          font-weight: 900;
+          letter-spacing: -1.5px;
+          margin-bottom: 15px;
+        }
+
+        .loading-brand span {
+          color: #247bff;
+        }
+
+        .loader {
+          width: 54px;
+          height: 54px;
+          border: 3px solid #1c2b40;
+          border-top-color: #247bff;
+          border-right-color: #58a0ff;
+          border-radius: 50%;
+          animation: spin .8s linear infinite;
+          box-shadow: 0 0 25px #247bff20;
+        }
+
+        .loading-title {
+          font-size: 14px;
+          font-weight: 600;
+          color: #f1f5f9;
+          margin: 5px 0 0;
+        }
+
+        .loading-subtitle {
+          font-size: 11px;
+          color: #64748b;
+          margin: 0;
+        }
+
+        .loading-indicator {
+          width: 120px;
+          height: 3px;
+          background: #172334;
+          border-radius: 10px;
+          overflow: hidden;
+          margin-top: 8px;
+        }
+
+        .loading-indicator span {
+          display: block;
+          height: 100%;
+          width: 40%;
+          background: #247bff;
+          border-radius: 10px;
+          animation: progress 1.5s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes progress {
+          0% { transform: translateX(-110%); }
+          100% { transform: translateX(300%); }
+        }
+      `}</style>
+
+      <div className="loading-brand">
+        re<span>trade</span>
+      </div>
+
+      <div className="loader" />
+
+      <p className="loading-title">
+        Loading your Retrade dashboard...
+      </p>
+
+      <p className="loading-subtitle">
+        Securely preparing your account
+      </p>
+
+      <div className="loading-indicator">
+        <span />
+      </div>
+    </main>
+  );
+}
+
           .loader {
             width: 38px;
             height: 38px;
