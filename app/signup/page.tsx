@@ -1,38 +1,36 @@
 
-"use client";
+'use client';
 
-import React, { useState, type FormEvent } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createClient } from "../../lib/supabase/client";
+import React, { useState } from 'react';
+import Link from 'next/link';
+import { createClient } from '../../lib/supabase/client';
 
-export default function SignUpPage() {
-  const router = useRouter();
-
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function SignupPage() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-  async function handleSignUp(e: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (loading) return;
 
-    setError("");
-    setSuccess("");
+    setErrorMsg('');
+    setSuccessMsg('');
 
     const cleanEmail = email.trim().toLowerCase();
 
-    if (!cleanEmail) {
-      setError("Please enter your email address.");
+    if (password.length < 8) {
+      setErrorMsg('Password must contain at least 8 characters.');
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must contain at least 8 characters.");
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
       return;
     }
 
@@ -41,353 +39,343 @@ export default function SignUpPage() {
     try {
       const supabase = createClient();
 
-      const { data, error: signUpError } =
-        await supabase.auth.signUp({
-          email: cleanEmail,
-          password,
-          options: {
-            emailRedirectTo: `${window.location.origin}/login`,
-          },
-        });
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanEmail,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/login`,
+        },
+      });
 
-      if (signUpError) {
-        setError(signUpError.message);
+      if (error) {
+        setErrorMsg(error.message);
         return;
       }
 
       if (data.session) {
-        router.replace("/dashboard");
-        router.refresh();
+        window.location.href = '/dashboard';
         return;
       }
 
-      setSuccess(
-        "Your account has been created. Please check your email to confirm your account before signing in."
+      setSuccessMsg(
+        'Registration successful. Please check your email to confirm your account before signing in.'
       );
 
-      setPassword("");
+      setPassword('');
+      setConfirmPassword('');
+
     } catch (err) {
-      console.error("Signup error:", err);
-      setError("An unexpected error occurred. Please try again.");
+      console.error('Signup error:', err);
+      setErrorMsg('Habaye ikibazo mu kwiyandikisha. Please try again.');
     } finally {
       setLoading(false);
     }
-  }
+  };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        width: "100%",
-        backgroundColor: "#080B12",
-        color: "#ffffff",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "24px",
-        fontFamily: "Arial, sans-serif",
-        boxSizing: "border-box",
-        overflowX: "hidden",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "420px",
-          backgroundColor: "#111722",
-          border: "1px solid #1e293b",
-          borderRadius: "16px",
-          padding: "32px",
-          boxShadow: "0 8px 30px rgba(0,0,0,0.45)",
-          boxSizing: "border-box",
-        }}
-      >
-        <div style={{ textAlign: "center", marginBottom: "28px" }}>
-          <Link
-            href="/"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "8px",
-              marginBottom: "16px",
-              textDecoration: "none",
-            }}
-          >
-            <div
-              style={{
-                width: "32px",
-                height: "32px",
-                background: "#ffffff",
-                borderRadius: "8px",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                position: "relative",
-              }}
-            >
-              <span
-                style={{
-                  color: "#000000",
-                  fontWeight: 900,
-                  fontSize: "18px",
-                  lineHeight: 1,
-                }}
-              >
-                R
-              </span>
-              <span
-                style={{
-                  width: "7px",
-                  height: "7px",
-                  background: "#ef4444",
-                  borderRadius: "50%",
-                  position: "absolute",
-                  bottom: "4px",
-                  left: "4px",
-                }}
+    <div className="xm-wrapper">
+      <style>{`
+        .xm-wrapper {
+          min-height: 100vh;
+          background-color: #f4f6f9;
+          color: #1f2937;
+          font-family: Arial, sans-serif;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+        .xm-wrapper * { box-sizing: border-box; }
+        .xm-header {
+          background-color: #0b0f1a;
+          padding: 16px 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+        }
+        .xm-logo {
+          color: #ffffff;
+          font-size: 24px;
+          font-weight: 900;
+          text-decoration: none;
+        }
+        .xm-logo span { color: #1553bd; }
+        .xm-back-link {
+          color: #d1d5db;
+          font-size: 14px;
+          text-decoration: none;
+        }
+        .xm-main {
+          flex-grow: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 40px 16px;
+        }
+        .xm-card {
+          background-color: #ffffff;
+          width: 100%;
+          max-width: 430px;
+          border-radius: 12px;
+          border: 1px solid #e5e7eb;
+          padding: 36px 32px;
+          box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        .xm-badge {
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #1553bd;
+          display: block;
+          margin-bottom: 6px;
+        }
+        .xm-title {
+          font-size: 26px;
+          font-weight: 800;
+          color: #111827;
+          margin: 0 0 6px 0;
+        }
+        .xm-subtitle {
+          font-size: 14px;
+          color: #6b7280;
+          margin: 0 0 24px 0;
+        }
+        .xm-error {
+          background-color: #fee2e2;
+          color: #991b1b;
+          padding: 10px;
+          border-radius: 6px;
+          font-size: 13px;
+          margin-bottom: 16px;
+          text-align: center;
+        }
+        .xm-success {
+          background-color: #dcfce7;
+          color: #166534;
+          padding: 12px;
+          border-radius: 6px;
+          font-size: 13px;
+          margin-bottom: 16px;
+          text-align: center;
+          line-height: 1.5;
+        }
+        .xm-form-group { margin-bottom: 20px; }
+        .xm-label {
+          font-size: 12px;
+          font-weight: 700;
+          text-transform: uppercase;
+          color: #374151;
+          display: block;
+          margin-bottom: 6px;
+        }
+        .xm-input {
+          width: 100%;
+          padding: 12px 14px;
+          background-color: #f9fafb;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+        }
+        .xm-input:focus {
+          border-color: #1553bd;
+          background-color: #fff;
+        }
+        .xm-submit-btn {
+          width: 100%;
+          background-color: #1553bd;
+          color: #ffffff;
+          border: none;
+          border-radius: 8px;
+          padding: 14px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          margin-top: 8px;
+        }
+        .xm-submit-btn:hover { background-color: #104299; }
+        .xm-submit-btn:disabled {
+          opacity: 0.65;
+          cursor: not-allowed;
+        }
+        .xm-card-footer {
+          margin-top: 24px;
+          padding-top: 20px;
+          border-top: 1px solid #f3f4f6;
+          text-align: center;
+        }
+        .xm-create-link {
+          font-size: 14px;
+          font-weight: 700;
+          color: #1553bd;
+          text-decoration: none;
+        }
+        .xm-footer {
+          background-color: #ffffff;
+          border-top: 1px solid #e5e7eb;
+          text-align: center;
+          padding: 16px;
+          font-size: 12px;
+          color: #6b7280;
+        }
+        @media (max-width: 480px) {
+          .xm-header {
+            padding: 16px;
+          }
+          .xm-card {
+            padding: 30px 22px;
+          }
+          .xm-title {
+            font-size: 24px;
+          }
+          .xm-back-link {
+            font-size: 12px;
+          }
+        }
+      `}</style>
+
+      <header className="xm-header">
+        <Link href="/" className="xm-logo">
+          RE<span>TRADE</span>
+        </Link>
+        <Link href="/" className="xm-back-link">
+          ← Back to homepage
+        </Link>
+      </header>
+
+      <main className="xm-main">
+        <div className="xm-card">
+          <span className="xm-badge">Secure Account Registration</span>
+
+          <h1 className="xm-title">Create your ReTrade account</h1>
+
+          <p className="xm-subtitle">
+            Join ReTrade and start managing your trading rewards.
+          </p>
+
+          {errorMsg && (
+            <div className="xm-error" role="alert">
+              {errorMsg}
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="xm-success" role="status">
+              {successMsg}
+              <div style={{ marginTop: '10px' }}>
+                <Link href="/login" className="xm-create-link">
+                  Go to Sign In →
+                </Link>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="xm-form-group">
+              <label className="xm-label" htmlFor="signup-email">
+                Email address
+              </label>
+              <input
+                id="signup-email"
+                type="email"
+                className="xm-input"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="name@example.com"
+                autoComplete="email"
+                required
+                disabled={loading}
               />
             </div>
 
-            <span
-              style={{
-                fontSize: "24px",
-                fontWeight: 900,
-                letterSpacing: "1px",
-                color: "#ffffff",
-              }}
-            >
-              Re<span style={{ color: "#2878f0" }}>Trade</span>
-            </span>
-          </Link>
-
-          <h1
-            style={{
-              fontSize: "22px",
-              fontWeight: 700,
-              margin: "0 0 8px",
-              color: "#ffffff",
-            }}
-          >
-            Create your account
-          </h1>
-
-          <p
-            style={{
-              color: "#98a5b8",
-              fontSize: "14px",
-              margin: 0,
-              lineHeight: 1.5,
-            }}
-          >
-            Start tracking your broker cashback & rewards
-          </p>
-        </div>
-
-        {error && (
-          <div
-            role="alert"
-            style={{
-              background: "#7f1d1d",
-              border: "1px solid #ef4444",
-              color: "#fca5a5",
-              padding: "12px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              marginBottom: "20px",
-              lineHeight: 1.5,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {success && (
-          <div
-            role="status"
-            style={{
-              background: "#064e3b",
-              border: "1px solid #10b981",
-              color: "#a7f3d0",
-              padding: "14px",
-              borderRadius: "8px",
-              fontSize: "13px",
-              marginBottom: "20px",
-              lineHeight: 1.6,
-            }}
-          >
-            {success}
-          </div>
-        )}
-
-        <form
-          onSubmit={handleSignUp}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "17px",
-          }}
-        >
-          <div>
-            <label
-              htmlFor="signup-email"
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#cbd5e1",
-                marginBottom: "7px",
-              }}
-            >
-              Email Address
-            </label>
-
-            <input
-              id="signup-email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="trader@example.com"
-              disabled={loading}
-              style={{
-                width: "100%",
-                background: "#080B12",
-                border: "1px solid #334155",
-                borderRadius: "9px",
-                padding: "14px 15px",
-                color: "#ffffff",
-                fontSize: "14px",
-                outline: "none",
-                boxSizing: "border-box",
-              }}
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="signup-password"
-              style={{
-                display: "block",
-                fontSize: "13px",
-                fontWeight: 600,
-                color: "#cbd5e1",
-                marginBottom: "7px",
-              }}
-            >
-              Password
-            </label>
-
-            <div style={{ position: "relative" }}>
+            <div className="xm-form-group">
+              <label className="xm-label" htmlFor="signup-password">
+                Password
+              </label>
               <input
                 id="signup-password"
-                type={showPassword ? "text" : "password"}
-                required
-                minLength={8}
-                autoComplete="new-password"
+                type={showPassword ? 'text' : 'password'}
+                className="xm-input"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="At least 8 characters"
+                placeholder="Create a password"
+                autoComplete="new-password"
+                minLength={8}
+                required
                 disabled={loading}
-                style={{
-                  width: "100%",
-                  background: "#080B12",
-                  border: "1px solid #334155",
-                  borderRadius: "9px",
-                  padding: "14px 65px 14px 15px",
-                  color: "#ffffff",
-                  fontSize: "14px",
-                  outline: "none",
-                  boxSizing: "border-box",
-                }}
               />
-
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                style={{
-                  position: "absolute",
-                  right: "13px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  background: "transparent",
-                  border: "none",
-                  color: "#60a5fa",
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                }}
-              >
-                {showPassword ? "HIDE" : "SHOW"}
-              </button>
             </div>
 
+            <div className="xm-form-group">
+              <label className="xm-label" htmlFor="confirm-password">
+                Confirm password
+              </label>
+              <input
+                id="confirm-password"
+                type={showPassword ? 'text' : 'password'}
+                className="xm-input"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                placeholder="Confirm your password"
+                autoComplete="new-password"
+                minLength={8}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div style={{ marginTop: '-10px', marginBottom: '16px' }}>
+              <label
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '7px',
+                  fontSize: '12px',
+                  color: '#6b7280',
+                  cursor: 'pointer',
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={showPassword}
+                  onChange={(e) => setShowPassword(e.target.checked)}
+                  disabled={loading}
+                />
+                Show passwords
+              </label>
+            </div>
+
+            <button
+              type="submit"
+              className="xm-submit-btn"
+              disabled={loading}
+            >
+              {loading ? 'Creating account...' : 'Create Account →'}
+            </button>
+          </form>
+
+          <div className="xm-card-footer">
             <p
               style={{
-                color: "#64748b",
-                fontSize: "11px",
-                margin: "7px 0 0",
+                fontSize: '12px',
+                color: '#6b7280',
+                marginBottom: '6px',
               }}
             >
-              Use at least 8 characters.
+              ALREADY HAVE AN ACCOUNT?
             </p>
+            <Link href="/login" className="xm-create-link">
+              Sign in to your account
+            </Link>
           </div>
+        </div>
+      </main>
 
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              width: "100%",
-              background: loading ? "#1d4ed8" : "#2878f0",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "9px",
-              padding: "14px",
-              fontSize: "15px",
-              fontWeight: 700,
-              cursor: loading ? "not-allowed" : "pointer",
-              marginTop: "7px",
-              opacity: loading ? 0.75 : 1,
-              transition: "0.2s",
-            }}
-          >
-            {loading ? "Creating account..." : "Create Account"}
-          </button>
-        </form>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: "#98a5b8",
-            fontSize: "13px",
-            margin: "24px 0 0",
-          }}
-        >
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            style={{
-              color: "#2878f0",
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            Log In
-          </Link>
-        </p>
-
-        <p
-          style={{
-            textAlign: "center",
-            color: "#64748b",
-            fontSize: "11px",
-            margin: "22px 0 0",
-          }}
-        >
-          Secure account registration · ReTrade
-        </p>
-      </div>
-    </main>
+      <footer className="xm-footer">
+        © 2026 ReTrade. All rights reserved.
+      </footer>
+    </div>
   );
 }
