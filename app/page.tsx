@@ -215,7 +215,7 @@ export default function Home() {
           .container { width: calc(100% - 36px); }
           .navbar { height: 75px; }
           .brand-logo { width: 155px; height: 55px; }
-          .brand-logo img { transform: scale(1.1); }
+          .brand-logo img { transform: scale(1.85); }
           .nav-links { display: none; }
           .nav-actions { gap: 12px; font-size: 12px; }
           .nav-actions .btn { padding: 10px 13px; }
@@ -233,7 +233,7 @@ export default function Home() {
         }
         @media(max-width: 420px) {
           .container { width: calc(100% - 30px); }
-          .brand-logo { width: 80px; }
+          .brand-logo { width: 65px; }
           .nav-actions { gap: 9px; }
           .nav-actions .btn { padding: 9px 10px; font-size: 11px; }
           .benefit-grid, .steps-grid { grid-template-columns: 1fr; }
