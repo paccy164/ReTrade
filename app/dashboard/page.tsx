@@ -15,8 +15,7 @@ type Tab =
 const LOGO_URL =
   "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
-const brokers = [
-  {
+const brokers = [  {
     name: "XM",
     logo: "https://www.google.com/s2/favicons?domain=xm.com&sz=128",
   },
