@@ -624,7 +624,7 @@ export default function DashboardPage() {
         .table {
           width: 100%;
           border-collapse: collapse;
-          min-width: 450px;
+          min-width: 18px;
         }
 
         .table th {
