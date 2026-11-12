@@ -12,15 +12,19 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [userEmail, setUserEmail] = useState<string>('');
+  const [userEmail, setUserEmail] = useState('');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     async function getUser() {
-      const supabase = createClient();
-      const { data } = await supabase.auth.getUser();
-      if (data?.user?.email) {
-        setUserEmail(data.user.email);
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getUser();
+        if (data?.user?.email) {
+          setUserEmail(data.user.email);
+        }
+      } catch (err) {
+        console.error('Auth error:', err);
       }
     }
     getUser();
@@ -45,178 +49,34 @@ export default function DashboardLayout({
   ];
 
   return (
-    <div className="retrade-layout">
-      <style>{`
-        .retrade-layout {
-          min-height: 100vh;
-          background-color: #080B12;
-          color: #ffffff;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-          display: flex;
-          flex-direction: column;
-        }
-        .retrade-body {
-          display: flex;
-          flex: 1;
-          position: relative;
-        }
-        .retrade-sidebar {
-          width: 260px;
-          background-color: #111722;
-          border-right: 1px solid #1e293b;
-          display: flex;
-          flex-direction: column;
-          position: fixed;
-          top: 0;
-          bottom: 0;
-          left: 0;
-          z-index: 40;
-          transition: transform 0.3s ease;
-        }
-        .sidebar-brand {
-          padding: 20px 24px;
-          border-bottom: 1px solid #1e293b;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-        }
-        .sidebar-nav {
-          padding: 20px 12px;
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-          flex: 1;
-          overflow-y: auto;
-        }
-        .nav-link {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 12px 16px;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          color: #98a5b8;
-          text-decoration: none;
-          transition: all 0.2s;
-        }
-        .nav-link:hover {
-          background-color: #1a2332;
-          color: #ffffff;
-        }
-        .nav-link.active {
-          background-color: #2878f0;
-          color: #ffffff;
-          box-shadow: 0 4px 12px rgba(40, 120, 240, 0.3);
-        }
-        .retrade-main-content {
-          flex: 1;
-          margin-left: 260px;
-          display: flex;
-          flex-direction: column;
-          min-width: 0;
-        }
-        .retrade-header {
-          height: 70px;
-          background-color: #111722;
-          border-bottom: 1px solid #1e293b;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 32px;
-          position: sticky;
-          top: 0;
-          z-index: 30;
-        }
-        .header-left {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-        }
-        .mobile-menu-btn {
-          display: none;
-          background: none;
-          border: none;
-          color: #fff;
-          font-size: 24px;
-          cursor: pointer;
-        }
-        .header-right {
-          display: flex;
-          align-items: center;
-          gap: 20px;
-        }
-        .user-pill {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          background: #080B12;
-          padding: 6px 14px;
-          border-radius: 20px;
-          border: 1px solid #1e293b;
-          font-size: 13px;
-          color: #cbd5e1;
-        }
-        .logout-btn {
-          background: #1e293b;
-          color: #f87171;
-          border: none;
-          padding: 8px 14px;
-          border-radius: 6px;
-          font-size: 13px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.2s;
-        }
-        .logout-btn:hover {
-          background: #7f1d1d;
-          color: #ffffff;
-        }
-        .content-container {
-          padding: 32px;
-          flex: 1;
-        }
-        .mobile-overlay {
-          display: none;
-          position: fixed;
-          inset: 0;
-          background: rgba(0,0,0,0.6);
-          z-index: 35;
-        }
+    <div style={{ minHeight: '100vh', backgroundColor: '#080B12', color: '#ffffff', display: 'flex', flexDirection: 'column', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ display: 'flex', flex: 1, position: 'relative' }}>
+        
+        {/* Mobile Menu Backdrop */}
+        {mobileMenuOpen && (
+          <div 
+            onClick={() => setMobileMenuOpen(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 35 }}
+          />
+        )}
 
-        @media (max-width: 1024px) {
-          .retrade-sidebar {
-            transform: translateX(-100%);
-          }
-          .retrade-sidebar.open {
-            transform: translateX(0);
-          }
-          .retrade-main-content {
-            margin-left: 0;
-          }
-          .mobile-menu-btn {
-            display: block;
-          }
-          .mobile-overlay.open {
-            display: block;
-          }
-          .retrade-header {
-            padding: 0 16px;
-          }
-          .content-container {
-            padding: 16px;
-          }
-        }
-      `}</style>
-
-      <div className="retrade-body">
-        <div 
-          className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`}
-          onClick={() => setMobileMenuOpen(false)}
-        />
-
-        <aside className={`retrade-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
-          <div className="sidebar-brand">
+        {/* Sidebar */}
+        <aside style={{
+          width: '260px',
+          backgroundColor: '#111722',
+          borderRight: '1px solid #1e293b',
+          display: 'flex',
+          flexDirection: 'column',
+          position: 'fixed',
+          top: 0,
+          bottom: 0,
+          left: 0,
+          zIndex: 40,
+          transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(-100%)',
+          transition: 'transform 0.3s ease',
+        }} className="lg:translate-x-0">
+          
+          <div style={{ padding: '20px 24px', borderBottom: '1px solid #1e293b', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
               <div style={{ width: '28px', height: '28px', background: '#fff', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <span style={{ color: '#000', fontWeight: '900', fontSize: '16px', lineHeight: 1 }}>R</span>
@@ -226,7 +86,8 @@ export default function DashboardLayout({
             </Link>
             <span style={{ fontSize: '10px', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>PRO</span>
           </div>
-          <nav className="sidebar-nav">
+
+          <nav style={{ padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: '6px', flex: 1, overflowY: 'auto' }}>
             {navItems.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -234,7 +95,19 @@ export default function DashboardLayout({
                   key={item.href}
                   href={item.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className={`nav-link ${isActive ? 'active' : ''}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    padding: '12px 16px',
+                    borderRadius: '8px',
+                    fontSize: '14px',
+                    fontWeight: 500,
+                    color: isActive ? '#ffffff' : '#98a5b8',
+                    backgroundColor: isActive ? '#2878f0' : 'transparent',
+                    textDecoration: 'none',
+                    boxShadow: isActive ? '0 4px 12px rgba(40, 120, 240, 0.3)' : 'none',
+                  }}
                 >
                   <span style={{ fontSize: '16px' }}>{item.icon}</span>
                   <span>{item.name}</span>
@@ -244,12 +117,26 @@ export default function DashboardLayout({
           </nav>
         </aside>
 
-        <div className="retrade-main-content">
-          <header className="retrade-header">
-            <div className="header-left">
+        {/* Main Content Area */}
+        <div style={{ flex: 1, marginLeft: '0', display: 'flex', flexDirection: 'column', minWidth: 0 }} className="lg:ml-[260px]">
+          
+          <header style={{
+            height: '70px',
+            backgroundColor: '#111722',
+            borderBottom: '1px solid #1e293b',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 24px',
+            position: 'sticky',
+            top: 0,
+            zIndex: 30,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button 
-                className="mobile-menu-btn"
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                style={{ background: 'none', border: 'none', color: '#fff', fontSize: '24px', cursor: 'pointer' }}
+                className="lg:hidden"
               >
                 ☰
               </button>
@@ -257,23 +144,28 @@ export default function DashboardLayout({
                 Trader Workspace
               </h2>
             </div>
-            <div className="header-right">
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               {userEmail && (
-                <div className="user-pill">
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: '#080B12', padding: '6px 12px', borderRadius: '20px', border: '1px solid #1e293b', fontSize: '13px', color: '#cbd5e1' }}>
                   <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></span>
-                  <span className="hidden sm:inline">{userEmail}</span>
+                  <span>{userEmail}</span>
                 </div>
               )}
-              <button className="logout-btn" onClick={handleLogout}>
+              <button 
+                onClick={handleLogout}
+                style={{ background: '#1e293b', color: '#f87171', border: 'none', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}
+              >
                 Log Out
               </button>
             </div>
           </header>
 
-          <main className="content-container">
+          <main style={{ padding: '32px', flex: '1' }} className="p-4 md:p-8">
             {children}
           </main>
         </div>
+
       </div>
     </div>
   );
