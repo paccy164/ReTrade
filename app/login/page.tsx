@@ -18,6 +18,7 @@ export default function LoginPage() {
 
   async function handleLogin(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
     if (loading) return;
 
     setLoading(true);
@@ -38,21 +39,21 @@ export default function LoginPage() {
       router.replace("/dashboard");
       router.refresh();
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Unable to sign in. Please try again.");
       setLoading(false);
     }
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-[#070a10] flex items-center justify-center px-5 py-12">
+    <main className="relative min-h-screen w-full overflow-hidden bg-[#080B12] text-white flex items-center justify-center px-5 py-12">
 
-      {/* Background effects */}
-      <div className="absolute -top-40 -left-32 w-96 h-96 rounded-full bg-blue-600/20 blur-[120px]" />
-      <div className="absolute -bottom-40 -right-32 w-96 h-96 rounded-full bg-cyan-500/10 blur-[120px]" />
+      {/* Background decoration */}
+      <div className="pointer-events-none absolute -top-40 -left-32 h-96 w-96 rounded-full bg-blue-600/20 blur-[130px]" />
+      <div className="pointer-events-none absolute -bottom-40 -right-32 h-96 w-96 rounded-full bg-cyan-500/10 blur-[130px]" />
 
       <div className="relative z-10 w-full max-w-[440px]">
 
-        {/* Logo */}
+        {/* Brand */}
         <div className="text-center mb-9">
           <Link href="/" className="inline-flex items-center justify-center">
             <img
@@ -64,31 +65,31 @@ export default function LoginPage() {
 
           <div className="mt-7">
             <div className="inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 mb-4">
-              <span className="w-1.5 h-1.5 rounded-full bg-blue-400" />
-              <span className="text-[11px] font-semibold tracking-[2px] text-blue-300 uppercase">
-                Member Access
+              <span className="h-1.5 w-1.5 rounded-full bg-blue-400" />
+              <span className="text-[10px] font-bold uppercase tracking-[2px] text-blue-300">
+                Secure Account Access
               </span>
             </div>
 
-            <h1 className="text-[32px] font-bold tracking-tight text-white">
+            <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
               Welcome back
             </h1>
 
-            <p className="text-sm text-slate-400 mt-2">
-              Sign in to access your trading rewards.
+            <p className="mt-3 text-sm text-slate-400">
+              Sign in to manage your trading rewards.
             </p>
           </div>
         </div>
 
-        {/* Login card */}
-        <div className="rounded-3xl border border-white/[0.09] bg-[#111722]/90 backdrop-blur-xl p-6 sm:p-9 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
+        {/* Login panel */}
+        <section className="rounded-3xl border border-white/[0.09] bg-[#111722]/95 p-6 sm:p-8 shadow-[0_25px_80px_rgba(0,0,0,0.45)]">
 
           <div className="mb-7">
-            <h2 className="text-xl font-semibold text-white">
-              Sign in
+            <h2 className="text-xl font-semibold">
+              Sign in to ReTrade
             </h2>
-            <p className="text-sm text-slate-500 mt-1">
-              Enter your account details below.
+            <p className="mt-1.5 text-sm text-slate-500">
+              Enter your registered account details.
             </p>
           </div>
 
@@ -96,7 +97,7 @@ export default function LoginPage() {
 
             {/* Email */}
             <div>
-              <label className="block text-[13px] font-medium text-slate-300 mb-2">
+              <label className="mb-2 block text-sm font-medium text-slate-300">
                 Email address
               </label>
 
@@ -121,18 +122,16 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="name@example.com"
-                  className="w-full h-[54px] pl-12 pr-4 rounded-xl bg-[#080d16] border border-[#293548] text-white text-sm placeholder:text-slate-600 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  className="h-14 w-full rounded-xl border border-[#293548] bg-[#090E17] pl-12 pr-4 text-sm text-white placeholder:text-slate-600 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 />
               </div>
             </div>
 
             {/* Password */}
             <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-[13px] font-medium text-slate-300">
-                  Password
-                </label>
-              </div>
+              <label className="mb-2 block text-sm font-medium text-slate-300">
+                Password
+              </label>
 
               <div className="relative">
                 <svg
@@ -155,13 +154,13 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="w-full h-[54px] pl-12 pr-16 rounded-xl bg-[#080d16] border border-[#293548] text-white text-sm placeholder:text-slate-600 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
+                  className="h-14 w-full rounded-xl border border-[#293548] bg-[#090E17] pl-12 pr-20 text-sm text-white placeholder:text-slate-600 outline-none transition focus:border-blue-500 focus:ring-4 focus:ring-blue-500/10"
                 />
 
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-semibold text-blue-400 hover:text-blue-300"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold tracking-wide text-blue-400 hover:text-blue-300"
                 >
                   {showPassword ? "HIDE" : "SHOW"}
                 </button>
@@ -175,15 +174,20 @@ export default function LoginPage() {
               </div>
             )}
 
-            {/* Sign in */}
+            {/* Submit */}
             <button
               type="submit"
               disabled={loading}
-              className="group relative w-full h-[54px] overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-white font-semibold text-sm shadow-lg shadow-blue-600/20 transition hover:shadow-blue-500/30 hover:brightness-110 disabled:opacity-60"
+              className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-blue-500 text-sm font-bold text-white shadow-lg shadow-blue-600/20 transition hover:brightness-110 hover:shadow-blue-500/30 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              <span className="relative z-10 flex items-center justify-center gap-2">
-                {loading ? "Signing in..." : "Sign In"}
-                {!loading && (
+              {loading ? (
+                <>
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
+                  Signing in...
+                </>
+              ) : (
+                <>
+                  Sign In
                   <svg
                     width="18"
                     height="18"
@@ -194,41 +198,42 @@ export default function LoginPage() {
                   >
                     <path d="M5 12h14M13 6l6 6-6 6" />
                   </svg>
-                )}
-              </span>
+                </>
+              )}
             </button>
-
           </form>
 
-          {/* Signup */}
-          <div className="relative my-7">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/[0.08]" />
-            </div>
-            <div className="relative flex justify-center">
-              <span className="bg-[#111722] px-4 text-xs text-slate-500">
-                New to ReTrade?
-              </span>
-            </div>
+          {/* Divider */}
+          <div className="my-7 flex items-center gap-4">
+            <div className="h-px flex-1 bg-white/[0.08]" />
+            <span className="text-xs text-slate-500">
+              NEW TO RETRADE?
+            </span>
+            <div className="h-px flex-1 bg-white/[0.08]" />
           </div>
 
+          {/* Signup */}
           <Link
             href="/signup"
-            className="flex h-[52px] items-center justify-center rounded-xl border border-[#34445c] bg-white/[0.02] text-sm font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
+            className="flex h-14 w-full items-center justify-center rounded-xl border border-[#34445c] bg-white/[0.02] text-sm font-semibold text-white transition hover:border-blue-500 hover:bg-blue-500/10"
           >
             Create an account
           </Link>
 
-        </div>
+        </section>
 
         {/* Footer */}
-        <div className="text-center mt-7">
-          <p className="text-xs text-slate-600">
-            Secure access · ReTrade Account Portal
-          </p>
-          <Link href="/" className="inline-block mt-3 text-xs text-slate-500 hover:text-blue-400">
+        <div className="mt-7 text-center">
+          <Link
+            href="/"
+            className="text-xs text-slate-500 transition hover:text-blue-400"
+          >
             ← Back to homepage
           </Link>
+
+          <p className="mt-4 text-[11px] text-slate-600">
+            © 2026 ReTrade. All rights reserved.
+          </p>
         </div>
 
       </div>
