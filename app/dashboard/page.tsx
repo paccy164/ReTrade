@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 
 type Tab =
@@ -12,309 +12,239 @@ type Tab =
   | "referrals"
   | "payout";
 
-type Broker = {
-  id: string;
-  name: string;
-  image: string;
-  description: string;
-  links: { label: string; url: string; code?: string }[];
-  newUsersOnly?: boolean;
-};
-
-type TradingAccount = {
-  id: string;
-  broker: string;
-  account_id: string;
-  status: string;
-  created_at: string;
-};
-
-type Payout = {
-  id: string;
-  amount: number;
-  network: string;
-  wallet_address: string;
-  status: string;
-  created_at: string;
-};
-
 const LOGO_URL =
   "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
-const BROKERS: Broker[] = [
+const BROKERS = [
   {
-    id: "xm",
+    id: "XM",
     name: "XM",
     image: "https://logo.clearbit.com/xm.com",
-    description: "Open or access your XM trading account.",
-    links: [
-      { label: "Visit XM", url: "https://www.xm.com/" },
-    ],
+    description: "Register or access your XM trading account.",
+    link: "https://www.xm.com/",
+    code: "XM",
+    availability: "New and existing clients",
   },
   {
-    id: "hfm",
+    id: "HFM",
     name: "HFM",
     image: "https://logo.clearbit.com/hfm.com",
-    description: "Register or access your HFM account using the applicable partner link.",
-    links: [
-      {
-        label: "New and existing clients",
-        url: "https://www.hfm.com/sv/en/?refid=30486859",
-      },
-      {
-        label: "Alternative new-client link",
-        url: "https://affs.click/XwgFJ",
-        code: "CDHQR",
-      },
-    ],
+    description: "Register or access your HFM account using a partner link.",
+    link: "https://www.hfm.com/sv/en/?refid=30486859",
+    alternativeLink: "https://affs.click/XwgFJ",
+    code: "CDHQR",
+    availability: "New and existing clients",
   },
   {
-    id: "justmarkets",
+    id: "JustMarkets",
     name: "JustMarkets",
     image: "https://logo.clearbit.com/justmarkets.com",
-    description: "Partner registration link for new users only.",
-    links: [
-      {
-        label: "Register as a new user",
-        url: "https://one.justmarkets.link/a/lkpf70rgxi",
-        code: "lkpf70rgxi",
-      },
-    ],
-    newUsersOnly: true,
+    description: "Partner registration link for new users.",
+    link: "https://one.justmarkets.link/a/lkpf70rgxi",
+    code: "lkpf70rgxi",
+    availability: "New users only",
   },
 ];
 
-const money = (value: number) =>
-  new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-  }).format(value);
-
 export default function DashboardPage() {
-  const supabase = useMemo(() => createClient(), []);
-
-  const [tab, setTab] = useState<Tab>("overview");
+  const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [email, setEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
-  const [accounts, setAccounts] = useState<TradingAccount[]>([]);
-  const [payouts, setPayouts] = useState<Payout[]>([]);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  const [referralCode, setReferralCode] = useState("");
-  const [referralLink, setReferralLink] = useState("");
-
-  const [notice, setNotice] = useState("");
-  const [accountBroker, setAccountBroker] = useState("XM");
+  const [selectedBroker, setSelectedBroker] = useState("");
   const [accountId, setAccountId] = useState("");
-  const [accountSubmitting, setAccountSubmitting] = useState(false);
-  const [accountSuccess, setAccountSuccess] = useState(false);
+  const [accountLoading, setAccountLoading] = useState(false);
+  const [accountMessage, setAccountMessage] = useState("");
+  const [accountError, setAccountError] = useState("");
 
-  const [amount, setAmount] = useState("5");
-  const [network, setNetwork] = useState("USDT BEP20");
-  const [wallet, setWallet] = useState("");
-  const [payoutSubmitting, setPayoutSubmitting] = useState(false);
-  const [payoutSuccess, setPayoutSuccess] = useState(false);
+  const [payoutAmount, setPayoutAmount] = useState("");
+  const [walletAddress, setWalletAddress] = useState("");
+  const [network, setNetwork] = useState("TRC20");
+  const [payoutLoading, setPayoutLoading] = useState(false);
+  const [payoutMessage, setPayoutMessage] = useState("");
+  const [payoutError, setPayoutError] = useState("");
 
-  const loadData = useCallback(
-    async (uid: string) => {
-      const profileResult = await supabase
-        .from("profiles")
-        .select("role, referral_code")
-        .eq("id", uid)
-        .maybeSingle();
-
-      const admin = profileResult.data?.role === "admin";
-      setIsAdmin(admin);
-
-      const accountQuery = supabase
-        .from("trading_accounts")
-        .select("id, broker, account_id, status, created_at")
-        .order("created_at", { ascending: false });
-
-      const payoutQuery = supabase
-        .from("payout_requests")
-        .select("id, amount, network, wallet_address, status, created_at")
-        .order("created_at", { ascending: false });
-
-      if (!admin) {
-        accountQuery.eq("user_id", uid);
-        payoutQuery.eq("user_id", uid);
-      }
-
-      const [accountResult, payoutResult] = await Promise.all([
-        accountQuery,
-        payoutQuery,
-      ]);
-
-      if (accountResult.error) {
-        setNotice("Could not load trading accounts: " + accountResult.error.message);
-      } else {
-        setAccounts((accountResult.data || []) as TradingAccount[]);
-      }
-
-      if (payoutResult.error) {
-        setNotice("Could not load payout requests: " + payoutResult.error.message);
-      } else {
-        setPayouts((payoutResult.data || []) as Payout[]);
-      }
-
-      const code =
-        profileResult.data?.referral_code ||
-        uid.slice(0, 8).toUpperCase();
-
-      setReferralCode(code);
-      setReferralLink(
-        `${window.location.origin}/signup?ref=${encodeURIComponent(code)}`
-      );
-    },
-    [supabase]
-  );
+  const [accounts, setAccounts] = useState<any[]>([]);
 
   useEffect(() => {
-    let alive = true;
+    const supabase = createClient();
+    let mounted = true;
 
-    async function init() {
+    async function loadUser() {
       const { data, error } = await supabase.auth.getUser();
 
-      if (!alive) return;
+      if (!mounted) return;
 
       if (error || !data.user) {
-        window.location.assign("/login");
+        window.location.href = "/login";
         return;
       }
 
       setEmail(data.user.email || "");
       setUserId(data.user.id);
 
-      await loadData(data.user.id);
+      const { data: accountData } = await supabase
+        .from("trading_accounts")
+        .select("*")
+        .eq("user_id", data.user.id)
+        .order("created_at", { ascending: false });
 
-      if (alive) setLoading(false);
+      if (mounted) {
+        setAccounts(accountData || []);
+        setLoading(false);
+      }
     }
 
-    init();
+    loadUser();
 
     return () => {
-      alive = false;
+      mounted = false;
     };
-  }, [loadData, supabase]);
+  }, []);
 
-  async function signOut() {
+  async function handleSignOut() {
     setSigningOut(true);
+
+    const supabase = createClient();
     await supabase.auth.signOut();
-    window.location.assign("/login");
+
+    window.location.href = "/login";
   }
 
   async function submitAccount(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setNotice("");
-    setAccountSuccess(false);
 
-    if (!accountId.trim()) {
-      setNotice("Please enter your broker trading account ID.");
+    setAccountMessage("");
+    setAccountError("");
+
+    if (!selectedBroker || !accountId.trim()) {
+      setAccountError("Please select a broker and enter your account ID.");
       return;
     }
 
-    setAccountSubmitting(true);
+    setAccountLoading(true);
 
-    const { error } = await supabase.from("trading_accounts").insert({
-      user_id: userId,
-      broker: accountBroker,
-      account_id: accountId.trim(),
-      status: "pending",
-    });
+    try {
+      const supabase = createClient();
 
-    setAccountSubmitting(false);
+      const { data, error } = await supabase
+        .from("trading_accounts")
+        .insert({
+          user_id: userId,
+          broker: selectedBroker,
+          account_id: accountId.trim(),
+          status: "pending",
+        })
+        .select()
+        .single();
 
-    if (error) {
-      setNotice("Could not submit account: " + error.message);
-      return;
+      if (error) throw error;
+
+      setAccounts((previous) => [data, ...previous]);
+      setAccountMessage(
+        "Congratulations! Your trading account has been submitted successfully. Your account is Pending Approval. Our admin will review it within 12 hours."
+      );
+
+      setAccountId("");
+      setSelectedBroker("");
+    } catch (error: any) {
+      setAccountError(
+        error.message || "Unable to submit your account. Please try again."
+      );
+    } finally {
+      setAccountLoading(false);
     }
-
-    setAccountId("");
-    setAccountSuccess(true);
-    await loadData(userId);
   }
 
   async function submitPayout(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setNotice("");
-    setPayoutSuccess(false);
 
-    const parsed = Number(amount);
+    setPayoutMessage("");
+    setPayoutError("");
 
-    if (!Number.isFinite(parsed) || parsed < 5) {
-      setNotice("Minimum payout request is $5.");
+    const amount = Number(payoutAmount);
+
+    if (!Number.isFinite(amount) || amount < 5) {
+      setPayoutError("Minimum payout amount is $5.");
       return;
     }
 
-    if (!wallet.trim()) {
-      setNotice("Please enter your USDT wallet address.");
+    if (!walletAddress.trim()) {
+      setPayoutError("Please enter your USDT wallet address.");
       return;
     }
 
-    setPayoutSubmitting(true);
+    setPayoutLoading(true);
 
-    const { error } = await supabase.from("payout_requests").insert({
-      user_id: userId,
-      amount: parsed,
-      network,
-      wallet_address: wallet.trim(),
-      status: "pending",
-    });
+    try {
+      const supabase = createClient();
 
-    setPayoutSubmitting(false);
+      const { error } = await supabase
+        .from("payout_requests")
+        .insert({
+          user_id: userId,
+          amount,
+          wallet_address: walletAddress.trim(),
+          network,
+          status: "pending",
+        });
 
-    if (error) {
-      setNotice("Could not submit payout: " + error.message);
-      return;
-    }
+      if (error) throw error;
 
-    setWallet("");
-    setPayoutSuccess(true);
-    await loadData(userId);
-  }
+      setPayoutMessage(
+        "Your payout request has been submitted successfully and is Pending Review."
+      );
 
-  async function updateStatus(
-    table: "trading_accounts" | "payout_requests",
-    id: string,
-    status: "approved" | "rejected" | "paid"
-  ) {
-    setNotice("");
-
-    const { error } = await supabase
-      .from(table)
-      .update({ status })
-      .eq("id", id);
-
-    if (error) {
-      setNotice("Update failed: " + error.message);
-    } else {
-      await loadData(userId);
-      setNotice("Status updated successfully.");
+      setPayoutAmount("");
+      setWalletAddress("");
+    } catch (error: any) {
+      setPayoutError(
+        error.message || "Unable to submit payout request."
+      );
+    } finally {
+      setPayoutLoading(false);
     }
   }
 
-  const nav: { id: Tab; label: string; icon: string }[] = [
+  const referralCode = userId
+    ? userId.replace(/-/g, "").slice(0, 10).toUpperCase()
+    : "";
+
+  const referralLink =
+    typeof window !== "undefined" && referralCode
+      ? `${window.location.origin}/signup?ref=${referralCode}`
+      : "";
+
+  async function copyReferral() {
+    try {
+      await navigator.clipboard.writeText(referralLink);
+      alert("Referral link copied!");
+    } catch {
+      alert("Unable to copy referral link.");
+    }
+  }
+
+  const navigation: { id: Tab; label: string; icon: string }[] = [
     { id: "overview", label: "Overview", icon: "⌂" },
-    { id: "brokers", label: "Explore Brokers", icon: "◈" },
+    { id: "brokers", label: "Explore Brokers", icon: "◇" },
     { id: "accounts", label: "Trading Accounts", icon: "▣" },
     { id: "transactions", label: "Transactions", icon: "⇄" },
     { id: "referrals", label: "Referrals", icon: "♧" },
-    { id: "payout", label: "Payout", icon: "↗" },
+    { id: "payout", label: "Payout", icon: "$" },
   ];
 
   if (loading) {
     return (
-      <div className="loading">
-        <img src={LOGO_URL} alt="ReTrade logo" />
+      <div className="loading-page">
+        <img src={LOGO_URL} alt="ReTrade" />
         <div className="spinner" />
         <p>Loading your dashboard...</p>
+
         <style jsx>{`
-          .loading {
-            min-height: 100svh;
+          .loading-page {
+            min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -325,8 +255,9 @@ export default function DashboardPage() {
             font-family: Arial, sans-serif;
           }
           img {
-            width: min(330px, 85vw);
-            height: 145px;
+            width: 260px;
+            max-width: 80vw;
+            height: 110px;
             object-fit: contain;
           }
           .spinner {
@@ -335,7 +266,7 @@ export default function DashboardPage() {
             border: 3px solid #dbe4f2;
             border-top-color: #1553bd;
             border-radius: 50%;
-            animation: spin .8s linear infinite;
+            animation: spin 0.8s linear infinite;
           }
           @keyframes spin {
             to { transform: rotate(360deg); }
@@ -346,344 +277,604 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="app">
+    <div className="dashboard">
       <style jsx global>{`
-        * { box-sizing: border-box; }
-        html, body {
+        * {
+          box-sizing: border-box;
+        }
+        html,
+        body {
           margin: 0;
           padding: 0;
-          background: #f4f6f9;
+          width: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
           font-family: Arial, sans-serif;
+          background: #f4f6f9;
         }
-        button, input, select { font: inherit; }
-        button { cursor: pointer; }
+        button,
+        input,
+        select {
+          font: inherit;
+        }
       `}</style>
 
       <style jsx>{`
-        .app {
-          min-height: 100svh;
+        .dashboard {
+          min-height: 100vh;
+          width: 100%;
+          overflow-x: hidden;
           color: #111827;
           background: #f4f6f9;
-          overflow-x: hidden;
         }
+
         .header {
-          min-height: 105px;
-          background: #fff;
+          width: 100%;
+          min-height: 100px;
+          padding: 10px 4%;
+          background: white;
           border-bottom: 1px solid #e5e7eb;
-          padding: 10px clamp(14px, 4vw, 56px);
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 16px;
+          gap: 15px;
         }
-        .brand {
+
+        .logo {
+          display: block;
+          width: 280px;
+          max-width: 55%;
+          height: 85px;
+          object-fit: contain;
+          object-position: left center;
+        }
+
+        .header-right {
           display: flex;
           align-items: center;
+          gap: 15px;
           min-width: 0;
         }
-        .brand img {
-          width: min(300px, 42vw);
-          height: 90px;
-          object-fit: contain;
-          display: block;
-        }
-        .headright {
-          display: flex;
-          align-items: center;
-          gap: 14px;
-        }
+
         .email {
-          font-size: 13px;
           color: #64748b;
+          font-size: 13px;
           overflow-wrap: anywhere;
         }
-        .logout, .secondary {
+
+        .logout {
           border: 1px solid #d1d5db;
-          background: #fff;
+          background: white;
           color: #111827;
-          padding: 10px 14px;
           border-radius: 8px;
+          padding: 10px 15px;
+          cursor: pointer;
+          white-space: nowrap;
         }
+
         .layout {
           width: 100%;
-          max-width: 1500px;
+          max-width: 1450px;
           margin: auto;
-          padding: 26px clamp(12px, 4vw, 56px);
+          padding: 28px 4%;
           display: grid;
-          grid-template-columns: 240px minmax(0, 1fr);
-          gap: 24px;
+          grid-template-columns: 235px minmax(0, 1fr);
+          gap: 25px;
         }
-        .sidebar, .card {
-          background: #fff;
-          border: 1px solid #e5e7eb;
-          border-radius: 14px;
-        }
+
         .sidebar {
-          padding: 14px;
-          height: max-content;
-          position: sticky;
-          top: 16px;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 18px 12px;
+          height: fit-content;
+          min-width: 0;
         }
-        .sideheading {
-          padding: 8px 10px 14px;
+
+        .side-heading {
+          padding: 8px 12px 15px;
           color: #9ca3af;
           font-size: 11px;
           font-weight: 700;
           letter-spacing: 1px;
         }
-        .nav { display: grid; gap: 5px; }
-        .nav button {
-          width: 100%;
+
+        .navigation {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .nav-button {
           display: flex;
           align-items: center;
-          gap: 11px;
-          text-align: left;
-          border: 0;
+          gap: 12px;
+          width: 100%;
+          border: none;
+          border-radius: 8px;
+          padding: 13px 12px;
           background: transparent;
           color: #64748b;
-          border-radius: 9px;
-          padding: 12px;
+          text-align: left;
+          cursor: pointer;
           font-size: 14px;
+          white-space: nowrap;
         }
-        .nav button.active, .nav button:hover {
+
+        .nav-button.active {
           background: #edf3ff;
           color: #1553bd;
           font-weight: 700;
         }
-        .main { min-width: 0; }
-        .welcome { margin: 0 0 22px; }
-        .welcome h1 {
-          font-size: clamp(22px, 3vw, 29px);
-          margin: 0 0 7px;
+
+        .nav-button:hover {
+          background: #f1f5f9;
         }
+
+        .nav-icon {
+          width: 20px;
+          text-align: center;
+          font-size: 18px;
+        }
+
+        .main {
+          min-width: 0;
+          width: 100%;
+        }
+
+        .welcome {
+          margin-bottom: 25px;
+        }
+
+        .welcome h1 {
+          margin: 0 0 8px;
+          font-size: 27px;
+        }
+
         .welcome p {
           margin: 0;
           color: #64748b;
           font-size: 14px;
-          line-height: 1.5;
+          line-height: 1.6;
         }
-        .title { font-size: 18px; margin: 0 0 15px; }
+
+        .section-title {
+          font-size: 19px;
+          margin: 0 0 17px;
+        }
+
         .stats {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 14px;
+          gap: 15px;
+          margin-bottom: 24px;
+        }
+
+        .stat,
+        .card {
+          min-width: 0;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+        }
+
+        .stat {
+          padding: 20px;
+        }
+
+        .stat-label {
+          color: #64748b;
+          font-size: 13px;
+          margin-bottom: 13px;
+        }
+
+        .stat-value {
+          font-size: 25px;
+          font-weight: 800;
+          margin-bottom: 7px;
+          overflow-wrap: anywhere;
+        }
+
+        .stat-note {
+          color: #9ca3af;
+          font-size: 12px;
+        }
+
+        .card {
+          padding: 23px;
           margin-bottom: 20px;
         }
-        .stat { padding: 20px; }
-        .muted { color: #64748b; font-size: 13px; }
-        .value {
-          font-size: 26px;
-          font-weight: 800;
-          margin: 10px 0 5px;
+
+        .empty {
+          text-align: center;
+          padding: 30px 12px;
         }
-        .card {
-          padding: 22px;
-          margin-bottom: 18px;
-          min-width: 0;
-        }
-        .grid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 14px;
-        }
-        .broker {
-          padding: 18px;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          min-width: 0;
-        }
-        .brokerhead {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          margin-bottom: 12px;
-        }
-        .brokerlogo {
-          width: 100px;
-          height: 75px;
-          flex: 0 0 100px;
+
+        .empty-icon {
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          background: #fff;
-          padding: 8px;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          margin: 0 auto 14px;
+          background: #edf3ff;
+          color: #1553bd;
+          font-size: 23px;
         }
-        .brokerlogo img {
-          display: block;
-          width: 100%;
-          height: 100%;
+
+        .empty h3 {
+          margin: 0 0 9px;
+          font-size: 16px;
+        }
+
+        .empty p {
+          max-width: 440px;
+          margin: auto;
+          color: #64748b;
+          font-size: 13px;
+          line-height: 1.7;
+        }
+
+        .primary {
+          display: inline-block;
+          padding: 12px 18px;
+          margin-top: 17px;
+          border: none;
+          border-radius: 8px;
+          background: #1553bd;
+          color: white;
+          font-weight: 700;
+          text-decoration: none;
+          cursor: pointer;
+        }
+
+        .primary:hover {
+          background: #10449f;
+        }
+
+        .broker-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 18px;
+        }
+
+        .broker-card {
+          min-width: 0;
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 13px;
+          padding: 20px;
+        }
+
+        .broker-heading {
+          display: flex;
+          align-items: center;
+          gap: 15px;
+          min-width: 0;
+          margin-bottom: 17px;
+        }
+
+        .broker-logo-box {
+          width: 85px;
+          height: 75px;
+          flex-shrink: 0;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 8px;
+          overflow: hidden;
+        }
+
+        .broker-logo-box img {
+          max-width: 100%;
+          max-height: 100%;
           object-fit: contain;
         }
-        .broker h3 { margin: 0 0 5px; font-size: 18px; }
-        .broker p, .help {
-          font-size: 13px;
-          color: #64748b;
-          line-height: 1.6;
+
+        .broker-heading h3 {
+          font-size: 20px;
+          margin: 0 0 7px;
+          overflow-wrap: anywhere;
         }
-        .links {
+
+        .broker-heading span {
+          color: #64748b;
+          font-size: 12px;
+        }
+
+        .broker-description {
+          color: #64748b;
+          font-size: 14px;
+          line-height: 1.6;
+          margin-bottom: 16px;
+        }
+
+        .broker-actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 8px;
-          margin-top: 12px;
+          gap: 9px;
         }
-        .linkbtn, .primary {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          text-decoration: none;
+
+        .broker-link {
+          display: inline-block;
           background: #1553bd;
-          color: #fff;
-          border: 0;
+          color: white;
+          text-decoration: none;
+          padding: 11px 13px;
           border-radius: 8px;
-          padding: 10px 13px;
           font-size: 13px;
           font-weight: 700;
+          text-align: center;
         }
-        .primary:disabled { opacity: .6; cursor: wait; }
-        .formgrid {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 13px;
-        }
-        label {
-          display: grid;
-          gap: 7px;
-          color: #475569;
+
+        .broker-code {
+          color: #64748b;
           font-size: 13px;
-          font-weight: 600;
+          margin: 16px 0;
+          overflow-wrap: anywhere;
         }
-        input, select {
-          width: 100%;
-          min-width: 0;
+
+        .outline-button {
           border: 1px solid #cbd5e1;
           border-radius: 8px;
-          padding: 12px;
-          background: #fff;
+          padding: 11px 15px;
+          background: white;
           color: #111827;
+          cursor: pointer;
+          font-weight: 600;
         }
-        .formactions { margin-top: 14px; }
-        .notice {
-          padding: 12px 14px;
-          border-radius: 9px;
-          background: #eff6ff;
-          color: #1d4ed8;
+
+        .form {
+          max-width: 600px;
+        }
+
+        .field {
+          margin-bottom: 17px;
+        }
+
+        .field label {
+          display: block;
           font-size: 13px;
-          margin: 12px 0;
-          line-height: 1.6;
+          font-weight: 700;
+          margin-bottom: 8px;
         }
-        .tablewrap { width: 100%; overflow-x: auto; }
-        table {
+
+        .field input,
+        .field select {
+          display: block;
           width: 100%;
-          border-collapse: collapse;
-          min-width: 560px;
+          min-width: 0;
+          height: 48px;
+          padding: 0 13px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: white;
+          color: #111827;
+          outline: none;
         }
-        th, td {
-          text-align: left;
-          padding: 12px 10px;
-          border-bottom: 1px solid #e5e7eb;
+
+        .field input:focus,
+        .field select:focus {
+          border-color: #1553bd;
+        }
+
+        .notice {
+          padding: 14px;
+          border-radius: 8px;
+          margin-bottom: 16px;
           font-size: 13px;
+          line-height: 1.6;
+          overflow-wrap: anywhere;
         }
-        th { color: #64748b; font-weight: 700; }
+
+        .success {
+          background: #ecfdf5;
+          border: 1px solid #a7f3d0;
+          color: #065f46;
+        }
+
+        .error {
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          color: #991b1b;
+        }
+
+        .referral-rule {
+          background: #f8fafc;
+          border: 1px solid #e5e7eb;
+          padding: 19px;
+          border-radius: 10px;
+        }
+
+        .referral-rule span {
+          display: block;
+          color: #64748b;
+          font-size: 13px;
+          margin-bottom: 9px;
+        }
+
+        .referral-rule strong {
+          color: #1553bd;
+          font-size: 27px;
+        }
+
+        .referral-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 15px;
+          margin: 20px 0;
+        }
+
+        .referral-link {
+          display: flex;
+          gap: 8px;
+          min-width: 0;
+          margin-top: 12px;
+        }
+
+        .referral-link input {
+          width: 100%;
+          min-width: 0;
+          padding: 12px;
+          border: 1px solid #cbd5e1;
+          border-radius: 8px;
+          background: #f8fafc;
+          color: #334155;
+          font-size: 12px;
+        }
+
+        .account-row {
+          padding: 16px 0;
+          border-bottom: 1px solid #e5e7eb;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 12px;
+        }
+
+        .account-row:last-child {
+          border-bottom: none;
+        }
+
+        .account-row strong {
+          display: block;
+          margin-bottom: 6px;
+        }
+
+        .account-row small {
+          color: #64748b;
+          overflow-wrap: anywhere;
+        }
+
         .status {
           display: inline-block;
-          padding: 5px 9px;
-          border-radius: 99px;
+          padding: 6px 10px;
+          border-radius: 20px;
           background: #fff7ed;
           color: #9a3412;
           font-size: 11px;
           font-weight: 700;
-          text-transform: capitalize;
+          white-space: nowrap;
         }
-        .actions { display: flex; gap: 6px; }
-        .actions button {
-          padding: 7px 9px;
-          border: 1px solid #d1d5db;
-          background: #fff;
-          border-radius: 7px;
-          font-size: 12px;
-        }
-        .empty {
-          text-align: center;
-          padding: 28px 12px;
-          color: #64748b;
-          font-size: 13px;
-          line-height: 1.6;
-        }
-        .rules {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
-          gap: 12px;
-          margin: 16px 0;
-        }
-        .rule {
-          padding: 16px;
-          background: #f8fafc;
-          border: 1px solid #e5e7eb;
-          border-radius: 10px;
-        }
-        .rule strong {
-          display: block;
-          color: #1553bd;
-          font-size: 24px;
-          margin-top: 7px;
-        }
+
         .footer {
           text-align: center;
-          padding: 18px;
           color: #9ca3af;
+          padding: 25px 12px;
           font-size: 12px;
         }
-        @media(max-width:850px) {
+
+        @media (max-width: 850px) {
           .layout {
             grid-template-columns: 1fr;
-            padding-top: 16px;
+            padding: 20px 3%;
+            gap: 16px;
           }
+
           .sidebar {
-            position: static;
             padding: 10px;
           }
-          .sideheading { display: none; }
-          .nav {
-            display: flex;
+
+          .side-heading {
+            display: none;
+          }
+
+          .navigation {
+            flex-direction: row;
             overflow-x: auto;
+            scrollbar-width: thin;
+          }
+
+          .nav-button {
+            width: auto;
+            flex-shrink: 0;
+            padding: 12px;
+            font-size: 12px;
+          }
+
+          .nav-icon {
+            display: none;
+          }
+        }
+
+        @media (max-width: 600px) {
+          .header {
+            min-height: 76px;
+            padding: 5px 12px;
+          }
+
+          .logo {
+            width: 210px;
+            max-width: 62%;
+            height: 68px;
+          }
+
+          .email {
+            display: none;
+          }
+
+          .header-right {
             gap: 5px;
           }
-          .nav button {
-            width: auto;
-            white-space: nowrap;
-            flex: 0 0 auto;
+
+          .logout {
+            padding: 9px 10px;
+            font-size: 12px;
           }
-          .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-        @media(max-width:560px) {
-          .header { min-height: 88px; padding: 7px 12px; }
-          .brand img {
-            width: 190px;
-            max-width: 55vw;
-            height: 72px;
+
+          .welcome h1 {
+            font-size: 23px;
           }
-          .email { display: none; }
-          .headright { gap: 7px; }
-          .logout { padding: 9px 10px; font-size: 12px; }
-          .layout { padding: 13px 10px; gap: 12px; }
-          .nav button { font-size: 12px; padding: 10px; }
-          .stats, .grid, .formgrid, .rules { grid-template-columns: 1fr; }
-          .card { padding: 15px; }
-          .stat { padding: 16px; }
-          .value { font-size: 23px; }
-          .broker { padding: 14px; }
+
+          .stats {
+            grid-template-columns: 1fr;
+            gap: 11px;
+          }
+
+          .stat {
+            padding: 17px;
+          }
+
+          .broker-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .card {
+            padding: 16px;
+          }
+
+          .referral-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .referral-link {
+            flex-direction: column;
+          }
+
+          .referral-link button {
+            width: 100%;
+          }
+
+          .account-row {
+            align-items: flex-start;
+            flex-direction: column;
+          }
         }
       `}</style>
 
       <header className="header">
-        <div className="brand">
-          <img src={LOGO_URL} alt="ReTrade logo" />
-        </div>
-        <div className="headright">
+        <img className="logo" src={LOGO_URL} alt="ReTrade Logo" />
+
+        <div className="header-right">
           <span className="email">{email}</span>
-          <button className="logout" onClick={signOut} disabled={signingOut}>
+          <button
+            className="logout"
+            onClick={handleSignOut}
+            disabled={signingOut}
+          >
             {signingOut ? "Signing out..." : "Sign Out"}
           </button>
         </div>
@@ -691,18 +882,19 @@ export default function DashboardPage() {
 
       <div className="layout">
         <aside className="sidebar">
-          <div className="sideheading">MAIN MENU</div>
-          <nav className="nav">
-            {nav.map(item => (
+          <div className="side-heading">MAIN MENU</div>
+
+          <nav className="navigation">
+            {navigation.map((item) => (
               <button
                 key={item.id}
-                className={tab === item.id ? "active" : ""}
-                onClick={() => {
-                  setTab(item.id);
-                  setNotice("");
-                }}
+                className={`nav-button ${
+                  activeTab === item.id ? "active" : ""
+                }`}
+                onClick={() => setActiveTab(item.id)}
               >
-                {item.icon} {item.label}
+                <span className="nav-icon">{item.icon}</span>
+                {item.label}
               </button>
             ))}
           </nav>
@@ -711,477 +903,347 @@ export default function DashboardPage() {
         <main className="main">
           <section className="welcome">
             <h1>
-              {tab === "overview"
+              {activeTab === "overview"
                 ? "Welcome to ReTrade"
-                : nav.find(n => n.id === tab)?.label}
+                : navigation.find((item) => item.id === activeTab)?.label}
             </h1>
-            <p>Manage your broker accounts, referrals and cashback payouts.</p>
+            <p>
+              Manage your broker accounts, referrals and cashback payouts.
+            </p>
           </section>
 
-          {notice && <div className="notice">{notice}</div>}
-
-          {tab === "overview" && (
+          {activeTab === "overview" && (
             <>
-              <h2 className="title">Account Overview</h2>
+              <h2 className="section-title">Account Overview</h2>
+
               <div className="stats">
-                <div className="card stat">
-                  <div className="muted">Total Cashback</div>
-                  <div className="value">$0.00</div>
-                  <div className="muted">Verified cashback</div>
+                <div className="stat">
+                  <div className="stat-label">Total Cashback</div>
+                  <div className="stat-value">$0.00</div>
+                  <div className="stat-note">Verified cashback</div>
                 </div>
-                <div className="card stat">
-                  <div className="muted">Available Balance</div>
-                  <div className="value">$0.00</div>
-                  <div className="muted">Available for payout</div>
+
+                <div className="stat">
+                  <div className="stat-label">Available Balance</div>
+                  <div className="stat-value">$0.00</div>
+                  <div className="stat-note">Available for payout</div>
                 </div>
-                <div className="card stat">
-                  <div className="muted">Trading Accounts</div>
-                  <div className="value">{accounts.length}</div>
-                  <div className="muted">Submitted accounts</div>
+
+                <div className="stat">
+                  <div className="stat-label">Trading Accounts</div>
+                  <div className="stat-value">{accounts.length}</div>
+                  <div className="stat-note">Submitted accounts</div>
                 </div>
               </div>
 
               <div className="card">
-                <h2 className="title">Get Started</h2>
-                <p className="help">
-                  Explore supported brokers, register using the relevant partner
-                  link, then submit your trading account ID for review.
-                </p>
-                <button className="primary" onClick={() => setTab("brokers")}>
-                  Explore Brokers
-                </button>
+                <h2 className="section-title">Get Started</h2>
+                <div className="empty">
+                  <div className="empty-icon">＋</div>
+                  <h3>Welcome to your ReTrade dashboard</h3>
+                  <p>
+                    Explore supported brokers, register using the relevant
+                    partner link, then submit your trading account for review.
+                  </p>
+                  <button
+                    className="primary"
+                    onClick={() => setActiveTab("brokers")}
+                  >
+                    Explore Brokers
+                  </button>
+                </div>
               </div>
             </>
           )}
 
-          {tab === "brokers" && (
+          {activeTab === "brokers" && (
             <div className="card">
-              <h2 className="title">Supported Brokers</h2>
-              <div className="grid">
-                {BROKERS.map(b => (
-                  <article className="broker" key={b.id}>
-                    <div className="brokerhead">
-                      <div className="brokerlogo">
+              <h2 className="section-title">Explore Supported Brokers</h2>
+
+              <div className="broker-grid">
+                {BROKERS.map((broker) => (
+                  <div className="broker-card" key={broker.id}>
+                    <div className="broker-heading">
+                      <div className="broker-logo-box">
                         <img
-                          src={b.image}
-                          alt={`${b.name} logo`}
-                          onError={e => {
+                          src={broker.image}
+                          alt={`${broker.name} logo`}
+                          onError={(e) => {
                             e.currentTarget.style.display = "none";
-                            const parent = e.currentTarget.parentElement;
-                            if (parent) {
-                              parent.textContent = b.name;
-                              parent.style.fontSize = "24px";
-                              parent.style.fontWeight = "800";
-                              parent.style.color = "#1553bd";
-                            }
                           }}
                         />
                       </div>
+
                       <div>
-                        <h3>{b.name}</h3>
-                        <span className="muted">
-                          {b.newUsersOnly ? "New users only" : "Supported broker"}
-                        </span>
+                        <h3>{broker.name}</h3>
+                        <span>{broker.availability}</span>
                       </div>
                     </div>
 
-                    <p>{b.description}</p>
+                    <p className="broker-description">
+                      {broker.description}
+                    </p>
 
-                    <div className="links">
-                      {b.links.map(link => (
+                    <div className="broker-actions">
+                      <a
+                        className="broker-link"
+                        href={broker.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        {broker.id === "JustMarkets"
+                          ? "Register as a new user"
+                          : "New and existing clients"}
+                      </a>
+
+                      {broker.alternativeLink && (
                         <a
-                          className="linkbtn"
-                          key={link.url}
-                          href={link.url}
+                          className="broker-link"
+                          href={broker.alternativeLink}
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          {link.label}
+                          Alternative new-client link
                         </a>
-                      ))}
+                      )}
                     </div>
 
-                    {b.links.some(l => l.code) && (
-                      <p>
-                        {b.links.filter(l => l.code).map(l => (
-                          <span key={l.url}>
-                            Partner code: <strong>{l.code}</strong>{" "}
-                          </span>
-                        ))}
-                      </p>
-                    )}
+                    <div className="broker-code">
+                      Partner code: <strong>{broker.code}</strong>
+                    </div>
 
                     <button
-                      className="secondary"
+                      className="outline-button"
                       onClick={() => {
-                        setAccountBroker(b.name);
-                        setAccountSuccess(false);
-                        setTab("accounts");
+                        setSelectedBroker(broker.id);
+                        setAccountMessage("");
+                        setAccountError("");
+                        setActiveTab("accounts");
                       }}
                     >
-                      Add {b.name} account
+                      Add {broker.name} account
                     </button>
-                  </article>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
-          {tab === "accounts" && (
-            <>
-              <div className="card">
-                <h2 className="title">Add Trading Account</h2>
-                <p className="help">
-                  After registering with a supported broker, enter your trading
-                  account ID below. Your submission will remain pending until
-                  reviewed by the ReTrade admin.
-                </p>
-
-                {accountSuccess && (
-                  <div className="notice">
-                    Congratulations! Your trading account was submitted
-                    successfully. Status: Pending admin approval. The admin
-                    will review it within 12 hours.
-                  </div>
-                )}
-
-                <form onSubmit={submitAccount}>
-                  <div className="formgrid">
-                    <label>
-                      Broker
-                      <select
-                        value={accountBroker}
-                        onChange={e => setAccountBroker(e.target.value)}
-                      >
-                        {BROKERS.map(b => (
-                          <option key={b.id} value={b.name}>
-                            {b.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-
-                    <label>
-                      Trading Account ID
-                      <input
-                        value={accountId}
-                        onChange={e => setAccountId(e.target.value)}
-                        placeholder="Enter your broker account ID"
-                        required
-                      />
-                    </label>
-                  </div>
-
-                  <div className="formactions">
-                    <button className="primary" disabled={accountSubmitting}>
-                      {accountSubmitting ? "Submitting..." : "Submit Account"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <div className="card">
-                <h2 className="title">My Trading Accounts</h2>
-                {accounts.length === 0 ? (
-                  <div className="empty">No trading accounts submitted yet.</div>
-                ) : (
-                  <div className="tablewrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Broker</th>
-                          <th>Account ID</th>
-                          <th>Date submitted</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {accounts.map(a => (
-                          <tr key={a.id}>
-                            <td>{a.broker}</td>
-                            <td>{a.account_id}</td>
-                            <td>{new Date(a.created_at).toLocaleDateString()}</td>
-                            <td><span className="status">{a.status}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {tab === "payout" && (
-            <>
-              <div className="card">
-                <h2 className="title">Request a Payout</h2>
-                <p className="help">
-                  Minimum payout request is $5. Make sure the network selected
-                  matches your wallet address.
-                </p>
-
-                {payoutSuccess && (
-                  <div className="notice">
-                    Your payout request has been submitted and is pending admin review.
-                  </div>
-                )}
-
-                <form onSubmit={submitPayout}>
-                  <div className="formgrid">
-                    <label>
-                      Amount (USD)
-                      <input
-                        type="number"
-                        min="5"
-                        step="0.01"
-                        value={amount}
-                        onChange={e => setAmount(e.target.value)}
-                        required
-                      />
-                    </label>
-
-                    <label>
-                      Payment network
-                      <select
-                        value={network}
-                        onChange={e => setNetwork(e.target.value)}
-                      >
-                        <option>USDT BEP20</option>
-                        <option>USDT TRC20</option>
-                      </select>
-                    </label>
-
-                    <label style={{ gridColumn: "1 / -1" }}>
-                      USDT wallet address
-                      <input
-                        value={wallet}
-                        onChange={e => setWallet(e.target.value)}
-                        placeholder="Paste your wallet address"
-                        required
-                      />
-                    </label>
-                  </div>
-
-                  <div className="formactions">
-                    <button className="primary" disabled={payoutSubmitting}>
-                      {payoutSubmitting ? "Submitting..." : "Submit Payout Request"}
-                    </button>
-                  </div>
-                </form>
-              </div>
-
-              <div className="card">
-                <h2 className="title">Payout History</h2>
-                {payouts.length === 0 ? (
-                  <div className="empty">No payout requests yet.</div>
-                ) : (
-                  <div className="tablewrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Amount</th>
-                          <th>Network</th>
-                          <th>Wallet address</th>
-                          <th>Date</th>
-                          <th>Status</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {payouts.map(p => (
-                          <tr key={p.id}>
-                            <td>{money(p.amount)}</td>
-                            <td>{p.network}</td>
-                            <td>{p.wallet_address}</td>
-                            <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                            <td><span className="status">{p.status}</span></td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
-
-          {tab === "referrals" && (
+          {activeTab === "accounts" && (
             <div className="card">
-              <h2 className="title">Referral Program</h2>
-              <p className="help">
-                Earn rewards from eligible, verified company profit generated
-                by clients you refer. Rewards are not calculated from the
-                referred client's cashback.
+              <h2 className="section-title">Add Trading Account</h2>
+
+              {accountMessage && (
+                <div className="notice success">
+                  <strong>Congratulations!</strong>
+                  <br />
+                  {accountMessage}
+                </div>
+              )}
+
+              {accountError && (
+                <div className="notice error">{accountError}</div>
+              )}
+
+              <form className="form" onSubmit={submitAccount}>
+                <div className="field">
+                  <label>Select Broker</label>
+                  <select
+                    value={selectedBroker}
+                    onChange={(e) => setSelectedBroker(e.target.value)}
+                    required
+                  >
+                    <option value="">Choose a broker</option>
+                    {BROKERS.map((broker) => (
+                      <option key={broker.id} value={broker.id}>
+                        {broker.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="field">
+                  <label>Trading Account ID</label>
+                  <input
+                    value={accountId}
+                    onChange={(e) => setAccountId(e.target.value)}
+                    placeholder="Enter your trading account ID"
+                    required
+                  />
+                </div>
+
+                <button
+                  className="primary"
+                  type="submit"
+                  disabled={accountLoading}
+                >
+                  {accountLoading ? "Submitting..." : "Submit Account"}
+                </button>
+              </form>
+
+              <p className="broker-description">
+                After submission, your account will be marked Pending Approval.
+                An administrator will review it within 12 hours.
               </p>
 
-              <div className="rules">
-                <div className="rule">
-                  <span className="muted">Referral commission</span>
+              <hr />
+
+              <h2 className="section-title">My Submitted Accounts</h2>
+
+              {accounts.length === 0 ? (
+                <div className="empty">
+                  <div className="empty-icon">▣</div>
+                  <h3>No accounts submitted yet</h3>
+                  <p>Your submitted broker accounts will appear here.</p>
+                </div>
+              ) : (
+                accounts.map((account) => (
+                  <div className="account-row" key={account.id}>
+                    <div>
+                      <strong>{account.broker}</strong>
+                      <small>Account ID: {account.account_id}</small>
+                    </div>
+                    <span className="status">
+                      {account.status || "Pending"}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          )}
+
+          {activeTab === "transactions" && (
+            <div className="card">
+              <h2 className="section-title">Transactions</h2>
+              <div className="empty">
+                <div className="empty-icon">⇄</div>
+                <h3>No transactions yet</h3>
+                <p>
+                  Your verified cashback credits and wallet transactions
+                  will appear here.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "referrals" && (
+            <div className="card">
+              <h2 className="section-title">Referral Program</h2>
+
+              <p className="broker-description">
+                Earn rewards when clients you refer generate eligible,
+                verified company profit through their trading activity.
+              </p>
+
+              <div className="referral-grid">
+                <div className="referral-rule">
+                  <span>Referral commission</span>
                   <strong>10%</strong>
                 </div>
-                <div className="rule">
-                  <span className="muted">Maximum lifetime earnings</span>
+
+                <div className="referral-rule">
+                  <span>Maximum lifetime earnings</span>
                   <strong>$500</strong>
                 </div>
               </div>
 
-              <label>
-                Your referral link
-                <input
-                  readOnly
-                  value={referralLink || "Referral link is being prepared"}
-                />
-              </label>
+              <h3>Your Referral Link</h3>
 
-              <div className="links">
-                <button
-                  className="primary"
-                  onClick={() => {
-                    if (referralLink) {
-                      navigator.clipboard?.writeText(referralLink);
-                      setNotice("Referral link copied.");
-                    }
-                  }}
-                >
-                  Copy referral link
+              <div className="referral-link">
+                <input readOnly value={referralLink} />
+                <button className="primary" onClick={copyReferral}>
+                  Copy Link
                 </button>
               </div>
 
-              <p className="help">
-                Referral code: {referralCode || "Loading…"}. Only verified
-                eligible company profit qualifies. Reversed or invalidated
-                profit is excluded.
+              <p className="broker-description">
+                Your referral code: <strong>{referralCode}</strong>
+              </p>
+
+              <p className="broker-description">
+                Your reward is calculated from verified company profit,
+                not from the referred client's cashback. Reversed or
+                invalidated company profit is excluded. The $500 limit
+                applies to each referrer over their lifetime.
+              </p>
+
+              <div className="empty">
+                <div className="empty-icon">♧</div>
+                <h3>Your referrals will appear here</h3>
+                <p>
+                  Referral activity and eligible rewards will appear
+                  here once they are recorded and verified.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "payout" && (
+            <div className="card">
+              <h2 className="section-title">Request a Payout</h2>
+
+              <p className="broker-description">
+                Minimum payout: <strong>$5</strong>. Payments are requested
+                in USDT.
+              </p>
+
+              {payoutMessage && (
+                <div className="notice success">{payoutMessage}</div>
+              )}
+
+              {payoutError && (
+                <div className="notice error">{payoutError}</div>
+              )}
+
+              <form className="form" onSubmit={submitPayout}>
+                <div className="field">
+                  <label>Amount (USD)</label>
+                  <input
+                    type="number"
+                    min="5"
+                    step="0.01"
+                    value={payoutAmount}
+                    onChange={(e) => setPayoutAmount(e.target.value)}
+                    placeholder="Minimum $5"
+                    required
+                  />
+                </div>
+
+                <div className="field">
+                  <label>USDT Network</label>
+                  <select
+                    value={network}
+                    onChange={(e) => setNetwork(e.target.value)}
+                  >
+                    <option value="TRC20">USDT TRC20</option>
+                    <option value="BEP20">USDT BEP20</option>
+                  </select>
+                </div>
+
+                <div className="field">
+                  <label>USDT Wallet Address</label>
+                  <input
+                    value={walletAddress}
+                    onChange={(e) => setWalletAddress(e.target.value)}
+                    placeholder="Enter your USDT wallet address"
+                    required
+                  />
+                </div>
+
+                <button
+                  className="primary"
+                  type="submit"
+                  disabled={payoutLoading}
+                >
+                  {payoutLoading ? "Submitting..." : "Request Payout"}
+                </button>
+              </form>
+
+              <p className="broker-description">
+                Please double-check your wallet address and network before
+                submitting. Your request will be reviewed by an administrator.
               </p>
             </div>
-          )}
-
-          {tab === "transactions" && (
-            <div className="card">
-              <h2 className="title">Transactions</h2>
-              <div className="empty">
-                Verified cashback credits and wallet transactions will appear
-                here when transaction records are connected.
-              </div>
-            </div>
-          )}
-
-          {isAdmin && (
-            <>
-              <div className="card">
-                <h2 className="title">Admin Review</h2>
-                <p className="help">
-                  Review submitted trading accounts. Approve or reject each
-                  submission after verification.
-                </p>
-
-                <h3>Trading account submissions</h3>
-
-                {accounts.length === 0 ? (
-                  <p className="empty">No account submissions.</p>
-                ) : (
-                  <div className="tablewrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Record ID</th>
-                          <th>Broker</th>
-                          <th>Account ID</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {accounts.map(a => (
-                          <tr key={a.id}>
-                            <td>{a.id}</td>
-                            <td>{a.broker}</td>
-                            <td>{a.account_id}</td>
-                            <td>{a.status}</td>
-                            <td>
-                              <div className="actions">
-                                <button
-                                  onClick={() =>
-                                    updateStatus("trading_accounts", a.id, "approved")
-                                  }
-                                >
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    updateStatus("trading_accounts", a.id, "rejected")
-                                  }
-                                >
-                                  Reject
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-
-              <div className="card">
-                <h2 className="title">Admin Payout Review</h2>
-
-                {payouts.length === 0 ? (
-                  <p className="empty">No payout requests.</p>
-                ) : (
-                  <div className="tablewrap">
-                    <table>
-                      <thead>
-                        <tr>
-                          <th>Request ID</th>
-                          <th>Amount</th>
-                          <th>Network</th>
-                          <th>Wallet</th>
-                          <th>Status</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {payouts.map(p => (
-                          <tr key={p.id}>
-                            <td>{p.id}</td>
-                            <td>{money(p.amount)}</td>
-                            <td>{p.network}</td>
-                            <td>{p.wallet_address}</td>
-                            <td>{p.status}</td>
-                            <td>
-                              <div className="actions">
-                                <button
-                                  onClick={() =>
-                                    updateStatus("payout_requests", p.id, "approved")
-                                  }
-                                >
-                                  Approve
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    updateStatus("payout_requests", p.id, "rejected")
-                                  }
-                                >
-                                  Reject
-                                </button>
-                                <button
-                                  onClick={() =>
-                                    updateStatus("payout_requests", p.id, "paid")
-                                  }
-                                >
-                                  Mark paid
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </div>
-            </>
           )}
         </main>
       </div>
