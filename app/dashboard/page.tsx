@@ -20,7 +20,6 @@ export default function DashboardPage() {
   useEffect(() => {
     async function loadUser() {
       const supabase = createClient();
-
       const { data, error } = await supabase.auth.getUser();
 
       if (error || !data.user) {
@@ -94,15 +93,21 @@ export default function DashboardPage() {
   return (
     <main className="dashboard">
       <style>{`
-        * { box-sizing: border-box; }
+        * {
+          box-sizing: border-box;
+        }
 
-        body {
+        html, body {
           margin: 0;
+          padding: 0;
           background: #080b11;
+          overflow-x: hidden;
         }
 
         .dashboard {
           min-height: 100vh;
+          width: 100%;
+          overflow-x: hidden;
           background: #080b11;
           color: #f7f9fc;
           font-family: Arial, sans-serif;
@@ -130,7 +135,9 @@ export default function DashboardPage() {
           letter-spacing: -1px;
         }
 
-        .brand span { color: #247bff; }
+        .brand span {
+          color: #247bff;
+        }
 
         .top-right {
           display: flex;
@@ -157,12 +164,14 @@ export default function DashboardPage() {
           display: grid;
           grid-template-columns: 235px minmax(0, 1fr);
           min-height: calc(100vh - 76px);
+          min-width: 0;
         }
 
         .sidebar {
           border-right: 1px solid #ffffff12;
           padding: 28px 16px;
           background: #0c111a;
+          min-width: 0;
         }
 
         .nav-label {
@@ -198,6 +207,7 @@ export default function DashboardPage() {
 
         .nav-icon {
           width: 20px;
+          flex-shrink: 0;
           text-align: center;
           font-size: 16px;
         }
@@ -206,6 +216,7 @@ export default function DashboardPage() {
           padding: 36px;
           max-width: 1450px;
           width: 100%;
+          min-width: 0;
           margin: auto;
         }
 
@@ -215,6 +226,7 @@ export default function DashboardPage() {
           align-items: flex-start;
           gap: 15px;
           margin-bottom: 30px;
+          min-width: 0;
         }
 
         .page-heading h1 {
@@ -226,6 +238,7 @@ export default function DashboardPage() {
         .page-heading p {
           color: #94a3b8;
           font-size: 13px;
+          line-height: 1.6;
           margin: 0;
         }
 
@@ -235,6 +248,7 @@ export default function DashboardPage() {
           padding: 10px 13px;
           border: 1px solid #ffffff18;
           border-radius: 8px;
+          white-space: nowrap;
         }
 
         .stats {
@@ -270,8 +284,13 @@ export default function DashboardPage() {
           font-size: 11px;
         }
 
-        .blue { color: #58a0ff; }
-        .green { color: #43d69a; }
+        .blue {
+          color: #58a0ff;
+        }
+
+        .green {
+          color: #43d69a;
+        }
 
         .content-grid {
           display: grid;
@@ -286,6 +305,7 @@ export default function DashboardPage() {
           border-radius: 13px;
           padding: 24px;
           min-width: 0;
+          width: 100%;
         }
 
         .panel h2 {
@@ -344,11 +364,13 @@ export default function DashboardPage() {
           align-items: center;
           gap: 8px;
           margin-top: 20px;
+          min-width: 0;
         }
 
         .referral-link input {
           min-width: 0;
           flex: 1;
+          width: 100%;
           background: #080e18;
           border: 1px solid #ffffff20;
           color: #94a3b8;
@@ -367,6 +389,7 @@ export default function DashboardPage() {
           font-weight: 800;
           cursor: pointer;
           white-space: nowrap;
+          flex-shrink: 0;
         }
 
         .section-title {
@@ -406,7 +429,17 @@ export default function DashboardPage() {
           margin-top: 12px;
         }
 
-        .table-wrap { overflow-x: auto; }
+        /* TRANSACTIONS */
+
+        .transaction-panel {
+          overflow: hidden;
+        }
+
+        .table-wrap {
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
 
         .table {
           width: 100%;
@@ -421,6 +454,7 @@ export default function DashboardPage() {
           font-weight: 700;
           padding: 14px 10px;
           border-bottom: 1px solid #ffffff13;
+          white-space: nowrap;
         }
 
         .table td {
@@ -428,6 +462,148 @@ export default function DashboardPage() {
           font-size: 12px;
           padding: 17px 10px;
           border-bottom: 1px solid #ffffff0c;
+        }
+
+        .no-transactions {
+          text-align: center;
+          color: #64748b !important;
+          padding: 30px 15px !important;
+        }
+
+        .mobile-transactions {
+          display: none;
+        }
+
+        .transaction-card {
+          padding: 17px;
+          background: #0c1420;
+          border: 1px solid #ffffff12;
+          border-radius: 11px;
+          margin-top: 12px;
+        }
+
+        .transaction-card-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 10px;
+          margin-bottom: 15px;
+        }
+
+        .transaction-card-title {
+          color: #f1f5f9;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .transaction-status {
+          color: #94a3b8;
+          font-size: 10px;
+          background: #172334;
+          border-radius: 20px;
+          padding: 6px 10px;
+          white-space: nowrap;
+        }
+
+        .transaction-details {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 15px;
+        }
+
+        .transaction-detail-label {
+          color: #64748b;
+          font-size: 10px;
+          margin-bottom: 6px;
+        }
+
+        .transaction-detail-value {
+          color: #cbd5e1;
+          font-size: 12px;
+          font-weight: 600;
+        }
+
+        /* TRADING ACCOUNTS */
+
+        .accounts-panel {
+          overflow: hidden;
+        }
+
+        .accounts-header {
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 15px;
+          margin-bottom: 22px;
+        }
+
+        .accounts-header h2 {
+          margin: 0 0 8px;
+          font-size: 17px;
+        }
+
+        .accounts-header p {
+          margin: 0;
+          color: #94a3b8;
+          font-size: 12px;
+          line-height: 1.6;
+        }
+
+        .accounts-badge {
+          color: #69a8ff;
+          background: #162d4d;
+          border: 1px solid #247bff35;
+          border-radius: 20px;
+          padding: 7px 11px;
+          font-size: 10px;
+          white-space: nowrap;
+          flex-shrink: 0;
+        }
+
+        .accounts-empty {
+          padding: 35px 20px;
+          text-align: center;
+          background: #0c1420;
+          border: 1px dashed #ffffff20;
+          border-radius: 12px;
+        }
+
+        .accounts-empty-icon {
+          width: 58px;
+          height: 58px;
+          margin: 0 auto 16px;
+          border-radius: 16px;
+          background: #162d4d;
+          color: #69a8ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 27px;
+        }
+
+        .accounts-empty h3 {
+          color: #e2e8f0;
+          font-size: 15px;
+          margin: 0 0 9px;
+        }
+
+        .accounts-empty p {
+          color: #64748b;
+          font-size: 12px;
+          line-height: 1.7;
+          max-width: 390px;
+          margin: 0 auto;
+        }
+
+        .accounts-info {
+          margin-top: 18px;
+          padding: 14px 15px;
+          border-radius: 9px;
+          background: #0b1523;
+          border: 1px solid #247bff25;
+          color: #94a3b8;
+          font-size: 11px;
+          line-height: 1.7;
         }
 
         .footer-note {
@@ -438,52 +614,224 @@ export default function DashboardPage() {
         }
 
         @media(max-width: 1000px) {
-          .stats { grid-template-columns: repeat(2, 1fr); }
-          .content-grid { grid-template-columns: 1fr; }
+          .stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+          }
+
+          .content-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         @media(max-width: 700px) {
-          .topbar { padding: 0 16px; height: 65px; }
-          .brand { font-size: 19px; }
-          .user-email { display: none; }
+          .topbar {
+            padding: 0 16px;
+            height: 65px;
+          }
+
+          .brand {
+            font-size: 19px;
+          }
+
+          .user-email {
+            display: none;
+          }
 
           .layout {
-            grid-template-columns: 1fr;
+            grid-template-columns: minmax(0, 1fr);
             min-height: calc(100vh - 65px);
+            width: 100%;
           }
 
           .sidebar {
             display: flex;
+            align-items: center;
+            gap: 7px;
+            width: 100%;
+            min-width: 0;
             overflow-x: auto;
-            gap: 5px;
-            padding: 12px 10px;
+            overflow-y: hidden;
+            white-space: nowrap;
+            padding: 12px 12px;
             border-right: 0;
             border-bottom: 1px solid #ffffff12;
+            scrollbar-width: none;
+            -webkit-overflow-scrolling: touch;
           }
 
-          .nav-label { display: none; }
+          .sidebar::-webkit-scrollbar {
+            display: none;
+          }
+
+          .nav-label {
+            display: none;
+          }
 
           .nav-button {
             width: auto;
-            flex-shrink: 0;
+            min-width: max-content;
+            flex: 0 0 auto;
             padding: 11px 13px;
             margin: 0;
             font-size: 11px;
+            white-space: nowrap;
+            justify-content: center;
           }
 
-          .main { padding: 25px 15px; }
-          .page-heading h1 { font-size: 23px; }
-          .date-label { display: none; }
-          .stat-card { padding: 17px; }
-          .stat-value { font-size: 23px; }
-          .panel { padding: 19px; }
+          .nav-icon {
+            width: auto;
+          }
+
+          .main {
+            padding: 24px 15px;
+            width: 100%;
+            min-width: 0;
+          }
+
+          .page-heading {
+            margin-bottom: 23px;
+          }
+
+          .page-heading h1 {
+            font-size: 23px;
+            line-height: 1.25;
+          }
+
+          .page-heading p {
+            font-size: 12px;
+          }
+
+          .date-label {
+            display: none;
+          }
+
+          .stat-card {
+            padding: 17px;
+          }
+
+          .stat-value {
+            font-size: 23px;
+          }
+
+          .panel {
+            padding: 19px;
+          }
+
+          /* Trading accounts mobile */
+
+          .accounts-header {
+            flex-direction: column;
+            gap: 12px;
+          }
+
+          .accounts-header h2 {
+            font-size: 16px;
+          }
+
+          .accounts-badge {
+            align-self: flex-start;
+          }
+
+          .accounts-empty {
+            padding: 28px 15px;
+          }
+
+          .accounts-empty p {
+            font-size: 11px;
+          }
+
+          .accounts-info {
+            font-size: 11px;
+          }
+
+          /* Transactions mobile */
+
+          .transaction-panel {
+            padding: 18px 15px;
+          }
+
+          .transaction-panel .section-title {
+            font-size: 16px;
+            margin-bottom: 16px;
+          }
+
+          .table-wrap {
+            display: none;
+          }
+
+          .mobile-transactions {
+            display: block;
+          }
+
+          .transaction-empty {
+            padding: 28px 13px;
+            background: #0c1420;
+            border: 1px dashed #ffffff20;
+            border-radius: 11px;
+            text-align: center;
+          }
+
+          .transaction-empty-icon {
+            font-size: 27px;
+            margin-bottom: 12px;
+          }
+
+          .transaction-empty-title {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 7px;
+          }
+
+          .transaction-empty-text {
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.7;
+          }
+
+          .referral-link {
+            flex-wrap: nowrap;
+          }
+
+          .referral-link input {
+            font-size: 10px;
+          }
         }
 
         @media(max-width: 380px) {
-          .stats { gap: 9px; }
-          .stat-card { padding: 13px; }
-          .stat-value { font-size: 20px; }
-          .nav-button { padding: 10px; }
+          .main {
+            padding-left: 12px;
+            padding-right: 12px;
+          }
+
+          .stats {
+            gap: 9px;
+          }
+
+          .stat-card {
+            padding: 13px;
+          }
+
+          .stat-value {
+            font-size: 20px;
+          }
+
+          .stat-top {
+            font-size: 11px;
+          }
+
+          .nav-button {
+            padding: 10px 11px;
+            font-size: 10px;
+          }
+
+          .panel {
+            padding: 15px;
+          }
+
+          .transaction-panel {
+            padding: 16px 12px;
+          }
         }
       `}</style>
 
@@ -508,28 +856,32 @@ export default function DashboardPage() {
             className={`nav-button ${activeTab === "overview" ? "active" : ""}`}
             onClick={() => setActiveTab("overview")}
           >
-            <span className="nav-icon">▦</span> Overview
+            <span className="nav-icon">▦</span>
+            Overview
           </button>
 
           <button
             className={`nav-button ${activeTab === "referrals" ? "active" : ""}`}
             onClick={() => setActiveTab("referrals")}
           >
-            <span className="nav-icon">♧</span> Referrals
+            <span className="nav-icon">♧</span>
+            Referrals
           </button>
 
           <button
             className={`nav-button ${activeTab === "accounts" ? "active" : ""}`}
             onClick={() => setActiveTab("accounts")}
           >
-            <span className="nav-icon">◎</span> Trading Accounts
+            <span className="nav-icon">◎</span>
+            Trading Accounts
           </button>
 
           <button
             className={`nav-button ${activeTab === "transactions" ? "active" : ""}`}
             onClick={() => setActiveTab("transactions")}
           >
-            <span className="nav-icon">⇄</span> Transactions
+            <span className="nav-icon">⇄</span>
+            Transactions
           </button>
         </aside>
 
@@ -542,7 +894,10 @@ export default function DashboardPage() {
                 {activeTab === "accounts" && "Trading Accounts"}
                 {activeTab === "transactions" && "Transactions"}
               </h1>
-              <p>Welcome back. Here's your Retrade account overview.</p>
+
+              <p>
+                Welcome back. Here's your Retrade account overview.
+              </p>
             </div>
 
             <div className="date-label">RETRADE ACCOUNT</div>
@@ -582,23 +937,29 @@ export default function DashboardPage() {
                   <p className="panel-description">
                     Your combined Retrade wallet balance.
                   </p>
+
                   <div className="wallet-value">$0.00</div>
+
                   <div className="wallet-caption">
                     Available balance · USD
                   </div>
+
                   <div className="blue-line" />
                 </div>
 
                 <div className="panel referral-panel">
                   <h2>Refer & Earn</h2>
                   <div className="referral-rate">10%</div>
+
                   <p className="referral-rule">
                     Earn 10% of the verified company profit generated by
                     your referred clients.
                   </p>
+
                   <p className="referral-rule">
                     Maximum lifetime referral earnings: <strong>$1,000</strong>.
                   </p>
+
                   <button
                     className="copy-button"
                     onClick={copyReferralLink}
@@ -610,6 +971,7 @@ export default function DashboardPage() {
 
               <div className="panel">
                 <h2 className="section-title">Recent Activity</h2>
+
                 <div className="empty-state">
                   <div className="empty-icon">⇄</div>
                   No transactions yet.
@@ -650,6 +1012,7 @@ export default function DashboardPage() {
 
               <div className="panel">
                 <h2>Invite Friends & Earn</h2>
+
                 <p className="panel-description">
                   Share your personal referral link. When your invited
                   clients generate verified company profit, you earn 10%.
@@ -661,6 +1024,7 @@ export default function DashboardPage() {
                     value={referralLink}
                     aria-label="Your referral link"
                   />
+
                   <button
                     className="copy-button"
                     onClick={copyReferralLink}
@@ -669,7 +1033,9 @@ export default function DashboardPage() {
                   </button>
                 </div>
 
-                {error && <div className="error-message">{error}</div>}
+                {error && (
+                  <div className="error-message">{error}</div>
+                )}
 
                 <div className="notice">
                   Example: If a referred client generates $33 in verified
@@ -681,6 +1047,7 @@ export default function DashboardPage() {
 
               <div className="panel" style={{ marginTop: 20 }}>
                 <h2 className="section-title">Referral History</h2>
+
                 <div className="empty-state">
                   <div className="empty-icon">♧</div>
                   No referrals yet.
@@ -691,21 +1058,50 @@ export default function DashboardPage() {
             </>
           )}
 
+          {/* TRADING ACCOUNTS */}
+
           {activeTab === "accounts" && (
-            <div className="panel">
-              <h2 className="section-title">Connected Trading Accounts</h2>
-              <div className="empty-state">
-                <div className="empty-icon">◎</div>
-                No trading accounts connected yet.
-                <br />
-                Your eligible broker accounts will appear here.
+            <div className="panel accounts-panel">
+              <div className="accounts-header">
+                <div>
+                  <h2>Connected Trading Accounts</h2>
+                  <p>
+                    Manage your eligible broker accounts connected to Retrade.
+                  </p>
+                </div>
+
+                <div className="accounts-badge">
+                  0 Connected
+                </div>
+              </div>
+
+              <div className="accounts-empty">
+                <div className="accounts-empty-icon">◎</div>
+
+                <h3>No trading accounts yet</h3>
+
+                <p>
+                  You haven't connected any trading accounts to Retrade.
+                  Your eligible broker accounts will appear here once
+                  connected and verified.
+                </p>
+              </div>
+
+              <div className="accounts-info">
+                <strong>Account security:</strong> Retrade does not need
+                your MT4 or MT5 trading password or investor password
+                to display your connected account information.
               </div>
             </div>
           )}
 
+          {/* TRANSACTIONS */}
+
           {activeTab === "transactions" && (
-            <div className="panel">
+            <div className="panel transaction-panel">
               <h2 className="section-title">Transaction History</h2>
+
+              {/* Desktop table */}
               <div className="table-wrap">
                 <table className="table">
                   <thead>
@@ -716,14 +1112,31 @@ export default function DashboardPage() {
                       <th>STATUS</th>
                     </tr>
                   </thead>
+
                   <tbody>
                     <tr>
-                      <td colSpan={4}>
+                      <td colSpan={4} className="no-transactions">
                         No transactions available yet.
                       </td>
                     </tr>
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile layout */}
+              <div className="mobile-transactions">
+                <div className="transaction-empty">
+                  <div className="transaction-empty-icon">⇄</div>
+
+                  <div className="transaction-empty-title">
+                    No transactions yet
+                  </div>
+
+                  <div className="transaction-empty-text">
+                    Your cashback, referral earnings and withdrawal
+                    history will appear here once transactions are available.
+                  </div>
+                </div>
               </div>
             </div>
           )}
