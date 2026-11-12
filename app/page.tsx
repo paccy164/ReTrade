@@ -211,11 +211,14 @@ export default function Home() {
           .broker-panel { gap: 25px; padding: 30px; }
         }
         @media(max-width: 700px) {
-          .container { width: calc(100% - 36px); }
-          .navbar { height: 75px; }
+          .container {
+  width: calc(100% - 16px);
+  margin-left: 8px;
+  margin-right: 8px;
+}
           .brand-logo {
-  width: 190px;
-  height: 62px;
+  width: 198px;
+  height: 72px;
 }
 
 .brand-logo img {
