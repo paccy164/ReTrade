@@ -217,12 +217,12 @@ export default function DashboardLayout({
 
         <aside className={`retrade-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="sidebar-brand">
-            <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-              <img 
-                src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png" 
-                alt="ReTrade Logo" 
-                style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
-              />
+            <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' }}>
+              <div style={{ width: '28px', height: '28px', background: '#fff', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                <span style={{ color: '#000', fontWeight: '900', fontSize: '16px', lineHeight: 1 }}>R</span>
+                <span style={{ width: '6px', height: '6px', background: '#ef4444', borderRadius: '50%', position: 'absolute', bottom: '4px', left: '4px' }}></span>
+              </div>
+              <span style={{ fontSize: '20px', fontWeight: 900, letterSpacing: '1px', color: '#ffffff' }}>Re<span style={{ color: '#2878f0' }}>Trade</span></span>
             </Link>
             <span style={{ fontSize: '10px', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>PRO</span>
           </div>
