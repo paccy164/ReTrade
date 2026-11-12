@@ -64,9 +64,7 @@ export default function DashboardPage() {
     return (
       <main className="loading-screen">
         <style>{`
-          * {
-            box-sizing: border-box;
-          }
+          * { box-sizing: border-box; }
 
           html, body {
             margin: 0 !important;
@@ -102,9 +100,7 @@ export default function DashboardPage() {
             margin-bottom: 15px;
           }
 
-          .loading-brand span {
-            color: #247bff;
-          }
+          .loading-brand span { color: #247bff; }
 
           .loader {
             width: 54px;
@@ -161,17 +157,13 @@ export default function DashboardPage() {
         <div className="loading-brand">
           re<span>trade</span>
         </div>
-
         <div className="loader" />
-
         <p className="loading-title">
           Loading your Retrade dashboard...
         </p>
-
         <p className="loading-subtitle">
           Securely preparing your account
         </p>
-
         <div className="loading-indicator">
           <span />
         </div>
@@ -202,7 +194,7 @@ export default function DashboardPage() {
         .dashboard {
           min-height: 100vh;
           width: 100%;
-          overflow-x: hidden;
+          overflow-x: clip;
           background: #080b11;
           color: #f7f9fc;
           font-family: Arial, sans-serif;
@@ -230,19 +222,22 @@ export default function DashboardPage() {
           letter-spacing: -1px;
         }
 
-        .brand span {
-          color: #247bff;
-        }
+        .brand span { color: #247bff; }
 
         .top-right {
           display: flex;
           align-items: center;
           gap: 18px;
+          min-width: 0;
         }
 
         .user-email {
           color: #94a3b8;
           font-size: 12px;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 260px;
         }
 
         .logout {
@@ -253,6 +248,7 @@ export default function DashboardPage() {
           border-radius: 8px;
           cursor: pointer;
           font-size: 12px;
+          flex-shrink: 0;
         }
 
         .layout {
@@ -313,7 +309,8 @@ export default function DashboardPage() {
           max-width: 1450px;
           width: 100%;
           min-width: 0;
-          margin: auto;
+          margin: 0 auto;
+          align-self: start;
         }
 
         .page-heading {
@@ -373,20 +370,17 @@ export default function DashboardPage() {
           font-weight: 800;
           letter-spacing: -1px;
           margin-bottom: 8px;
+          overflow-wrap: anywhere;
         }
 
         .stat-note {
           color: #64748b;
           font-size: 11px;
+          line-height: 1.5;
         }
 
-        .blue {
-          color: #58a0ff;
-        }
-
-        .green {
-          color: #43d69a;
-        }
+        .blue { color: #58a0ff; }
+        .green { color: #43d69a; }
 
         .content-grid {
           display: grid;
@@ -608,7 +602,7 @@ export default function DashboardPage() {
           line-height: 1.7;
         }
 
-        /* TRANSACTIONS - DESKTOP */
+        /* TRANSACTIONS */
 
         .transaction-panel {
           overflow: hidden;
@@ -650,46 +644,46 @@ export default function DashboardPage() {
           padding: 30px 15px !important;
         }
 
-        /* TRANSACTIONS - MOBILE */
-
         .mobile-transactions {
           display: none;
-.transaction-empty {
-  padding: 18px 14px;
-  background: #0c1420;
-  border: 1px dashed #26364d;
-  border-radius: 12px;
-  text-align: center;
-  width: 100%;
-  min-height: 0;
-  height: auto;
-        
+          width: 100%;
+        }
+
+        .transaction-empty {
+          padding: 20px 14px;
+          background: #0c1420;
+          border: 1px dashed #26364d;
+          border-radius: 12px;
+          text-align: center;
+          width: 100%;
+          min-height: 0;
+          height: auto;
         }
 
         .transaction-empty-icon {
-          width: 56px;
-          height: 56px;
-          margin: 0 auto 15px;
-          border-radius: 16px;
+          width: 44px;
+          height: 44px;
+          margin: 0 auto 12px;
+          border-radius: 13px;
           background: #162d4d;
           color: #69a8ff;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 26px;
+          font-size: 22px;
         }
 
         .transaction-empty-title {
           color: #e2e8f0;
           font-size: 14px;
           font-weight: 700;
-          margin-bottom: 9px;
+          margin-bottom: 8px;
         }
 
         .transaction-empty-text {
           color: #64748b;
           font-size: 11px;
-          line-height: 1.8;
+          line-height: 1.7;
           max-width: 320px;
           margin: 0 auto;
         }
@@ -709,30 +703,48 @@ export default function DashboardPage() {
           .content-grid {
             grid-template-columns: 1fr;
           }
+
+          .main {
+            padding: 28px;
+          }
         }
+
+        /* MOBILE LAYOUT */
 
         @media(max-width: 700px) {
           .topbar {
-            padding: 0 16px;
-            height: 65px;
+            padding: 0 15px;
+            height: 62px;
           }
 
           .brand {
             font-size: 19px;
           }
 
+          .top-right {
+            gap: 8px;
+          }
+
           .user-email {
             display: none;
           }
 
+          .logout {
+            padding: 9px 11px;
+            font-size: 11px;
+          }
+
           .layout {
+            display: grid;
             grid-template-columns: minmax(0, 1fr);
-            min-height: calc(100vh - 65px);
+            grid-template-rows: auto 1fr;
+            min-height: calc(100vh - 62px);
             width: 100%;
           }
 
           .sidebar {
             display: flex;
+            flex-direction: row;
             align-items: center;
             gap: 7px;
             width: 100%;
@@ -740,7 +752,7 @@ export default function DashboardPage() {
             overflow-x: auto;
             overflow-y: hidden;
             white-space: nowrap;
-            padding: 12px;
+            padding: 11px 12px;
             border-right: 0;
             border-bottom: 1px solid #ffffff12;
             scrollbar-width: none;
@@ -759,7 +771,7 @@ export default function DashboardPage() {
             width: auto;
             min-width: max-content;
             flex: 0 0 auto;
-            padding: 11px 13px;
+            padding: 10px 12px;
             margin: 0;
             font-size: 11px;
             white-space: nowrap;
@@ -771,41 +783,110 @@ export default function DashboardPage() {
           }
 
           .main {
-            padding: 24px 15px;
+            padding: 22px 14px 28px;
             width: 100%;
+            max-width: none;
             min-width: 0;
+            margin: 0;
+            align-self: start;
           }
 
           .page-heading {
-            margin-bottom: 23px;
+            margin-bottom: 20px;
+            gap: 8px;
           }
 
           .page-heading h1 {
-            font-size: 23px;
+            font-size: 22px;
             line-height: 1.25;
           }
 
           .page-heading p {
-            font-size: 12px;
+            font-size: 11px;
           }
 
           .date-label {
             display: none;
           }
 
+          .stats {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 16px;
+          }
+
           .stat-card {
-            padding: 17px;
+            padding: 15px 13px;
+            border-radius: 11px;
+          }
+
+          .stat-top {
+            font-size: 10px;
+            margin-bottom: 12px;
+            line-height: 1.5;
           }
 
           .stat-value {
-            font-size: 23px;
+            font-size: 21px;
+            margin-bottom: 6px;
+          }
+
+          .stat-note {
+            font-size: 10px;
+          }
+
+          .content-grid {
+            grid-template-columns: minmax(0, 1fr);
+            gap: 13px;
+            margin-bottom: 15px;
           }
 
           .panel {
-            padding: 19px;
+            padding: 18px 15px;
+            border-radius: 11px;
           }
 
-          /* Trading accounts mobile */
+          .panel h2 {
+            font-size: 15px;
+          }
+
+          .panel-description {
+            font-size: 11px;
+            margin-bottom: 16px;
+          }
+
+          .wallet-value {
+            font-size: 30px;
+          }
+
+          .referral-rate {
+            font-size: 34px;
+          }
+
+          .referral-rule {
+            font-size: 11px;
+          }
+
+          .referral-link {
+            gap: 6px;
+          }
+
+          .referral-link input {
+            padding: 10px 8px;
+            font-size: 9px;
+          }
+
+          .copy-button {
+            padding: 11px 12px;
+            font-size: 10px;
+          }
+
+          .empty-state {
+            padding: 25px 12px;
+            font-size: 11px;
+          }
+
+          /* Accounts mobile */
 
           .accounts-header {
             flex-direction: column;
@@ -813,7 +894,11 @@ export default function DashboardPage() {
           }
 
           .accounts-header h2 {
-            font-size: 16px;
+            font-size: 15px;
+          }
+
+          .accounts-header p {
+            font-size: 11px;
           }
 
           .accounts-badge {
@@ -821,23 +906,39 @@ export default function DashboardPage() {
           }
 
           .accounts-empty {
-            padding: 28px 15px;
+            padding: 25px 13px;
+          }
+
+          .accounts-empty-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 23px;
+            margin-bottom: 13px;
+          }
+
+          .accounts-empty h3 {
+            font-size: 14px;
           }
 
           .accounts-empty p {
             font-size: 11px;
           }
 
-          /* Transactions mobile: hide table completely */
+          .accounts-info {
+            font-size: 10px;
+            padding: 12px;
+          }
+
+          /* Transactions mobile */
 
           .transaction-panel {
-            padding: 18px 15px;
+            padding: 17px 13px;
             overflow: hidden;
           }
 
           .transaction-panel .section-title {
-            font-size: 16px;
-            margin-bottom: 17px;
+            font-size: 15px;
+            margin-bottom: 14px;
           }
 
           .transaction-panel .table-wrap {
@@ -850,51 +951,58 @@ export default function DashboardPage() {
           }
 
           .transaction-empty {
-            padding: 28px 14px;
-            background: #0c1420;
-            border: 1px dashed #26364d;
-            border-radius: 11px;
-            width: 100%;
+            padding: 18px 12px;
           }
 
-          .referral-link input {
+          .transaction-empty-icon {
+            width: 42px;
+            height: 42px;
+            margin-bottom: 10px;
+          }
+
+          .transaction-empty-title {
+            font-size: 13px;
+          }
+
+          .transaction-empty-text {
             font-size: 10px;
+            line-height: 1.6;
+          }
+
+          .footer-note {
+            padding: 20px 0 5px;
           }
         }
 
         @media(max-width: 380px) {
           .main {
-            padding-left: 12px;
-            padding-right: 12px;
+            padding-left: 11px;
+            padding-right: 11px;
           }
 
           .stats {
-            gap: 9px;
+            gap: 8px;
           }
 
           .stat-card {
-            padding: 13px;
+            padding: 12px 10px;
           }
 
           .stat-value {
-            font-size: 20px;
-          }
-
-          .stat-top {
-            font-size: 11px;
+            font-size: 19px;
           }
 
           .nav-button {
-            padding: 10px 11px;
+            padding: 9px 10px;
             font-size: 10px;
           }
 
           .panel {
-            padding: 15px;
+            padding: 15px 12px;
           }
 
           .transaction-panel {
-            padding: 16px 12px;
+            padding: 15px 11px;
           }
         }
       `}</style>
@@ -1000,38 +1108,27 @@ export default function DashboardPage() {
               <div className="content-grid">
                 <div className="panel">
                   <h2>My Wallet</h2>
-
                   <p className="panel-description">
                     Your combined Retrade wallet balance.
                   </p>
-
                   <div className="wallet-value">$0.00</div>
-
                   <div className="wallet-caption">
                     Available balance · USD
                   </div>
-
                   <div className="blue-line" />
                 </div>
 
                 <div className="panel referral-panel">
                   <h2>Refer & Earn</h2>
-
                   <div className="referral-rate">10%</div>
-
                   <p className="referral-rule">
                     Earn 10% of the verified company profit generated by
                     your referred clients.
                   </p>
-
                   <p className="referral-rule">
                     Maximum lifetime referral earnings: <strong>$1,000</strong>.
                   </p>
-
-                  <button
-                    className="copy-button"
-                    onClick={copyReferralLink}
-                  >
+                  <button className="copy-button" onClick={copyReferralLink}>
                     {copied ? "Copied ✓" : "Copy referral link"}
                   </button>
                 </div>
@@ -1039,7 +1136,6 @@ export default function DashboardPage() {
 
               <div className="panel">
                 <h2 className="section-title">Recent Activity</h2>
-
                 <div className="empty-state">
                   <div className="empty-icon">⇄</div>
                   No transactions yet.
@@ -1082,7 +1178,6 @@ export default function DashboardPage() {
 
               <div className="panel">
                 <h2>Invite Friends & Earn</h2>
-
                 <p className="panel-description">
                   Share your personal referral link. When your invited
                   clients generate verified company profit, you earn 10%.
@@ -1094,11 +1189,7 @@ export default function DashboardPage() {
                     value={referralLink}
                     aria-label="Your referral link"
                   />
-
-                  <button
-                    className="copy-button"
-                    onClick={copyReferralLink}
-                  >
+                  <button className="copy-button" onClick={copyReferralLink}>
                     {copied ? "Copied ✓" : "Copy"}
                   </button>
                 </div>
@@ -1117,7 +1208,6 @@ export default function DashboardPage() {
 
               <div className="panel" style={{ marginTop: 20 }}>
                 <h2 className="section-title">Referral History</h2>
-
                 <div className="empty-state">
                   <div className="empty-icon">♧</div>
                   No referrals yet.
@@ -1139,17 +1229,12 @@ export default function DashboardPage() {
                     Manage your eligible broker accounts connected to Retrade.
                   </p>
                 </div>
-
-                <div className="accounts-badge">
-                  0 Connected
-                </div>
+                <div className="accounts-badge">0 Connected</div>
               </div>
 
               <div className="accounts-empty">
                 <div className="accounts-empty-icon">◎</div>
-
                 <h3>No trading accounts yet</h3>
-
                 <p>
                   You haven't connected any trading accounts to Retrade.
                   Your eligible broker accounts will appear here once
@@ -1195,11 +1280,9 @@ export default function DashboardPage() {
               <div className="mobile-transactions">
                 <div className="transaction-empty">
                   <div className="transaction-empty-icon">⇄</div>
-
                   <div className="transaction-empty-title">
                     No transactions yet
                   </div>
-
                   <div className="transaction-empty-text">
                     Your cashback, referral earnings and withdrawal
                     history will appear here once transactions are available.
