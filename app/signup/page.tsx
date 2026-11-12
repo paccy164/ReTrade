@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { createClient } from '../../lib/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -99,6 +99,7 @@ export default function SignUpPage() {
                 color: '#ffffff',
                 fontSize: '14px',
                 outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
           </div>
@@ -122,6 +123,7 @@ export default function SignUpPage() {
                 color: '#ffffff',
                 fontSize: '14px',
                 outline: 'none',
+                boxSizing: 'border-box',
               }}
             />
           </div>
