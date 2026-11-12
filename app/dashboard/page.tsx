@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -21,7 +20,8 @@ export default function DashboardPage() {
     try {
       const supabase = createClient();
 
-      const authCheck = supabase.auth.getClaims();
+      // Twifashishije getUser() isanzwe yemewe na @supabase/ssr muri Next.js client
+      const authCheck = supabase.auth.getUser();
 
       const timeout = new Promise<never>((_, reject) => {
         timeoutId = setTimeout(
@@ -37,15 +37,15 @@ export default function DashboardPage() {
 
       if (error) throw error;
 
-      const claims = data?.claims;
+      const user = data?.user;
 
-      if (!claims?.sub) {
+      if (!user) {
         router.replace("/login");
         return;
       }
 
       setEmail(
-        typeof claims.email === "string" ? claims.email : "ReTrade User"
+        typeof user.email === "string" ? user.email : "ReTrade User"
       );
     } catch (err) {
       setError(
