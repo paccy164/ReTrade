@@ -4,7 +4,7 @@
 import React, { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
+import { createClient } from "../../lib/supabase/client";
 
 export default function SignUpPage() {
   const router = useRouter();
@@ -102,7 +102,6 @@ export default function SignUpPage() {
           boxSizing: "border-box",
         }}
       >
-        {/* Logo & Brand */}
         <div style={{ textAlign: "center", marginBottom: "28px" }}>
           <Link
             href="/"
@@ -137,7 +136,6 @@ export default function SignUpPage() {
               >
                 R
               </span>
-
               <span
                 style={{
                   width: "7px",
@@ -186,7 +184,6 @@ export default function SignUpPage() {
           </p>
         </div>
 
-        {/* Error Message */}
         {error && (
           <div
             role="alert"
@@ -205,7 +202,6 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {/* Success Message */}
         {success && (
           <div
             role="status"
@@ -224,7 +220,6 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {/* Signup Form */}
         <form
           onSubmit={handleSignUp}
           style={{
@@ -233,7 +228,6 @@ export default function SignUpPage() {
             gap: "17px",
           }}
         >
-          {/* Email */}
           <div>
             <label
               htmlFor="signup-email"
@@ -271,7 +265,6 @@ export default function SignUpPage() {
             />
           </div>
 
-          {/* Password */}
           <div>
             <label
               htmlFor="signup-password"
@@ -341,7 +334,6 @@ export default function SignUpPage() {
             </p>
           </div>
 
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={loading}
@@ -364,7 +356,6 @@ export default function SignUpPage() {
           </button>
         </form>
 
-        {/* Login Link */}
         <p
           style={{
             textAlign: "center",
@@ -386,7 +377,6 @@ export default function SignUpPage() {
           </Link>
         </p>
 
-        {/* Footer */}
         <p
           style={{
             textAlign: "center",
