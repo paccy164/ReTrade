@@ -1,250 +1,288 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { createClient } from "../../lib/supabase/client";
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { createClient } from '../../lib/supabase/client';
 
-export default function DashboardPage() {
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
   const router = useRouter();
-
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  async function loadUser() {
-    setLoading(true);
-    setError("");
-
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-
-    try {
-      const supabase = createClient();
-
-      // Twifashishije getUser() isanzwe yemewe na @supabase/ssr muri Next.js client
-      const authCheck = supabase.auth.getUser();
-
-      const timeout = new Promise<never>((_, reject) => {
-        timeoutId = setTimeout(
-          () => reject(new Error("Connection timed out. Please try again.")),
-          12000
-        );
-      });
-
-      const { data, error } = await Promise.race([
-        authCheck,
-        timeout,
-      ]);
-
-      if (error) throw error;
-
-      const user = data?.user;
-
-      if (!user) {
-        router.replace("/login");
-        return;
-      }
-
-      setEmail(
-        typeof user.email === "string" ? user.email : "ReTrade User"
-      );
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Unable to verify your account."
-      );
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-      setLoading(false);
-    }
-  }
+  const [userEmail, setUserEmail] = useState<string>('');
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    loadUser();
+    async function getUser() {
+      const supabase = createClient();
+      const { data } = await supabase.auth.getUser();
+      if (data?.user?.email) {
+        setUserEmail(data.user.email);
+      }
+    }
+    getUser();
   }, []);
 
   async function handleLogout() {
     const supabase = createClient();
     await supabase.auth.signOut();
-    router.replace("/login");
+    router.replace('/login');
     router.refresh();
   }
 
-  if (loading) {
-    return (
-      <main style={styles.page}>
-        <div style={styles.center}>
-          <div style={styles.spinner} />
-          <p>Loading your ReTrade dashboard...</p>
-        </div>
-      </main>
-    );
-  }
-
-  if (error) {
-    return (
-      <main style={styles.page}>
-        <div style={styles.errorCard}>
-          <h2>Dashboard could not load</h2>
-          <p>{error}</p>
-          <button style={styles.button} onClick={loadUser}>
-            Try Again
-          </button>
-          <button
-            style={styles.secondary}
-            onClick={() => router.replace("/login")}
-          >
-            Back to Login
-          </button>
-        </div>
-      </main>
-    );
-  }
+  const navItems = [
+    { name: 'Overview', href: '/dashboard', icon: '📊' },
+    { name: 'Trading Accounts', href: '/dashboard/accounts', icon: '🔗' },
+    { name: 'Cashback', href: '/dashboard/cashback', icon: '💰' },
+    { name: 'Transactions', href: '/dashboard/transactions', icon: '📄' },
+    { name: 'Withdrawals', href: '/dashboard/withdrawals', icon: '💸' },
+    { name: 'Referrals', href: '/dashboard/referrals', icon: '👥' },
+    { name: 'Profile & Settings', href: '/dashboard/settings', icon: '⚙️' },
+    { name: 'Help & Support', href: '/dashboard/support', icon: '🎧' },
+  ];
 
   return (
-    <main style={styles.page}>
-      <header style={styles.header}>
-        <h1 style={styles.logo}>ReTrade<span>.</span></h1>
-        <button style={styles.logout} onClick={handleLogout}>
-          Log Out
-        </button>
-      </header>
+    <div className="retrade-layout">
+      <style>{`
+        .retrade-layout {
+          min-height: 100vh;
+          background-color: #080B12;
+          color: #ffffff;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+          display: flex;
+          flex-direction: column;
+        }
+        .retrade-body {
+          display: flex;
+          flex: 1;
+          position: relative;
+        }
+        /* Sidebar Desktop */
+        .retrade-sidebar {
+          width: 260px;
+          background-color: #111722;
+          border-right: 1px solid #1e293b;
+          display: flex;
+          flex-direction: column;
+          position: fixed;
+          top: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 40;
+          transition: transform 0.3s ease;
+        }
+        .sidebar-brand {
+          padding: 24px;
+          font-size: 22px;
+          font-weight: 900;
+          letter-spacing: 1px;
+          border-bottom: 1px solid #1e293b;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+        .sidebar-brand span {
+          color: #2878f0;
+        }
+        .sidebar-nav {
+          padding: 20px 12px;
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          flex: 1;
+          overflow-y: auto;
+        }
+        .nav-link {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 16px;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 500;
+          color: #98a5b8;
+          text-decoration: none;
+          transition: all 0.2s;
+        }
+        .nav-link:hover {
+          background-color: #1a2332;
+          color: #ffffff;
+        }
+        .nav-link.active {
+          background-color: #2878f0;
+          color: #ffffff;
+          box-shadow: 0 4px 12px rgba(40, 120, 240, 0.3);
+        }
+        /* Main Content Wrapper */
+        .retrade-main-content {
+          flex: 1;
+          margin-left: 260px;
+          display: flex;
+          flex-direction: column;
+          min-width: 0;
+        }
+        /* Top Header */
+        .retrade-header {
+          height: 70px;
+          background-color: #111722;
+          border-bottom: 1px solid #1e293b;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 32px;
+          position: sticky;
+          top: 0;
+          z-index: 30;
+        }
+        .header-left {
+          display: flex;
+          align-items: center;
+          gap: 16px;
+        }
+        .mobile-menu-btn {
+          display: none;
+          background: none;
+          border: none;
+          color: #fff;
+          font-size: 24px;
+          cursor: pointer;
+        }
+        .header-right {
+          display: flex;
+          align-items: center;
+          gap: 20px;
+        }
+        .user-pill {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          background: #080B12;
+          padding: 6px 14px;
+          border-radius: 20px;
+          border: 1px solid #1e293b;
+          font-size: 13px;
+          color: #cbd5e1;
+        }
+        .logout-btn {
+          background: #1e293b;
+          color: #f87171;
+          border: none;
+          padding: 8px 14px;
+          border-radius: 6px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.2s;
+        }
+        .logout-btn:hover {
+          background: #7f1d1d;
+          color: #ffffff;
+        }
+        /* Content Area */
+        .content-container {
+          padding: 32px;
+          flex: 1;
+        }
+        /* Mobile Overlay */
+        .mobile-overlay {
+          display: none;
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.6);
+          z-index: 35;
+        }
 
-      <section style={styles.content}>
-        <p style={styles.eyebrow}>TRADER DASHBOARD</p>
-        <h2 style={styles.title}>Welcome to ReTrade</h2>
-        <p style={styles.muted}>{email}</p>
+        @media (max-width: 1024px) {
+          .retrade-sidebar {
+            transform: translateX(-100%);
+          }
+          .retrade-sidebar.open {
+            transform: translateX(0);
+          }
+          .retrade-main-content {
+            margin-left: 0;
+          }
+          .mobile-menu-btn {
+            display: block;
+          }
+          .mobile-overlay.open {
+            display: block;
+          }
+          .retrade-header {
+            padding: 0 16px;
+          }
+          .content-container {
+            padding: 16px;
+          }
+        }
+      `}</style>
 
-        <div style={styles.card}>
-          <p style={styles.muted}>Account status</p>
-          <h3 style={styles.active}>Account Connected</h3>
-          <p style={styles.muted}>
-            Your ReTrade account is ready. Verified cashback
-            transactions will appear here.
-          </p>
-        </div>
+      <div className="retrade-body">
+        {/* Mobile Sidebar Backdrop */}
+        <div 
+          className={`mobile-overlay ${mobileMenuOpen ? 'open' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+        />
 
-        <div style={styles.grid}>
-          <div style={styles.card}>
-            <p style={styles.muted}>Cashback Balance</p>
-            <h2>$0.00</h2>
+        {/* Sidebar */}
+        <aside className={`retrade-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
+          <div className="sidebar-brand">
+            RE<span>TRADE</span>
+            <span style={{ fontSize: '11px', background: '#1e293b', padding: '2px 8px', borderRadius: '4px', color: '#38bdf8' }}>PRO</span>
           </div>
+          <nav className="sidebar-nav">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                >
+                  <span style={{ fontSize: '16px' }}>{item.icon}</span>
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+        </aside>
 
-          <div style={styles.card}>
-            <p style={styles.muted}>Trading Accounts</p>
-            <h2>0</h2>
-          </div>
+        {/* Main Content */}
+        <div className="retrade-main-content">
+          <header className="retrade-header">
+            <div className="header-left">
+              <button 
+                className="mobile-menu-btn"
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              >
+                ☰
+              </button>
+              <h2 style={{ fontSize: '18px', fontWeight: 700, margin: 0 }}>
+                Trader Workspace
+              </h2>
+            </div>
+            <div className="header-right">
+              {userEmail && (
+                <div className="user-pill">
+                  <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></span>
+                  <span className="hidden sm:inline">{userEmail}</span>
+                </div>
+              )}
+              <button className="logout-btn" onClick={handleLogout}>
+                Log Out
+              </button>
+            </div>
+          </header>
+
+          <main className="content-container">
+            {children}
+          </main>
         </div>
-      </section>
-    </main>
+      </div>
+    </div>
   );
 }
-
-const styles: Record<string, React.CSSProperties> = {
-  page: {
-    minHeight: "100vh",
-    width: "100%",
-    boxSizing: "border-box",
-    background: "#080b11",
-    color: "#ffffff",
-    padding: "24px",
-    fontFamily: "Arial, sans-serif",
-  },
-  header: {
-    maxWidth: "1100px",
-    margin: "0 auto",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    borderBottom: "1px solid #202a3a",
-    paddingBottom: "20px",
-  },
-  logo: {
-    fontSize: "26px",
-    fontWeight: 800,
-  },
-  logout: {
-    background: "#182438",
-    color: "#ffffff",
-    border: "1px solid #30415a",
-    borderRadius: "8px",
-    padding: "11px 18px",
-    cursor: "pointer",
-  },
-  content: {
-    maxWidth: "1100px",
-    margin: "45px auto",
-  },
-  eyebrow: {
-    color: "#438cff",
-    fontSize: "12px",
-    fontWeight: 700,
-    letterSpacing: "2px",
-  },
-  title: {
-    fontSize: "30px",
-    margin: "10px 0",
-  },
-  muted: {
-    color: "#98a5b8",
-    lineHeight: 1.6,
-  },
-  card: {
-    background: "#101722",
-    border: "1px solid #202d40",
-    borderRadius: "14px",
-    padding: "24px",
-    marginTop: "22px",
-    minWidth: 0,
-  },
-  grid: {
-    display: "grid",
-    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-    gap: "16px",
-  },
-  active: {
-    color: "#52d69b",
-  },
-  center: {
-    minHeight: "80vh",
-    display: "flex",
-    flexDirection: "column",
-    alignItems: "center",
-    justifyContent: "center",
-    color: "#aab6c8",
-  },
-  spinner: {
-    width: "32px",
-    height: "32px",
-    border: "3px solid #26354a",
-    borderTop: "3px solid #2878f0",
-    borderRadius: "50%",
-    marginBottom: "15px",
-  },
-  errorCard: {
-    maxWidth: "420px",
-    margin: "100px auto",
-    padding: "25px",
-    background: "#101722",
-    border: "1px solid #303d50",
-    borderRadius: "14px",
-  },
-  button: {
-    background: "#2878f0",
-    color: "#fff",
-    border: 0,
-    borderRadius: "8px",
-    padding: "12px 20px",
-    cursor: "pointer",
-    marginRight: "8px",
-  },
-  secondary: {
-    background: "#26354a",
-    color: "#fff",
-    border: 0,
-    borderRadius: "8px",
-    padding: "12px 20px",
-    cursor: "pointer",
-    marginTop: "10px",
-  },
-};
