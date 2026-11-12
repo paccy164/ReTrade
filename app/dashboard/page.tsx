@@ -5,35 +5,63 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "../../lib/supabase/client";
 
-type Tab = "overview" | "referrals" | "accounts" | "transactions";
-
 export default function DashboardPage() {
   const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState<Tab>("overview");
-  const [userEmail, setUserEmail] = useState("");
-  const [userId, setUserId] = useState("");
+  const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(true);
-  const [copied, setCopied] = useState(false);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    async function loadUser() {
-      const supabase = createClient();
-      const { data, error } = await supabase.auth.getUser();
+  async function loadUser() {
+    setLoading(true);
+    setError("");
 
-      if (error || !data.user) {
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    try {
+      const supabase = createClient();
+
+      const authCheck = supabase.auth.getClaims();
+
+      const timeout = new Promise<never>((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(new Error("Connection timed out. Please try again.")),
+          12000
+        );
+      });
+
+      const { data, error } = await Promise.race([
+        authCheck,
+        timeout,
+      ]);
+
+      if (error) throw error;
+
+      const claims = data?.claims;
+
+      if (!claims?.sub) {
         router.replace("/login");
         return;
       }
 
-      setUserEmail(data.user.email ?? "");
-      setUserId(data.user.id);
+      setEmail(
+        typeof claims.email === "string" ? claims.email : "ReTrade User"
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to verify your account."
+      );
+    } finally {
+      if (timeoutId) clearTimeout(timeoutId);
       setLoading(false);
     }
+  }
 
+  useEffect(() => {
     loadUser();
-  }, [router]);
+  }, []);
 
   async function handleLogout() {
     const supabase = createClient();
@@ -42,1243 +70,181 @@ export default function DashboardPage() {
     router.refresh();
   }
 
-  async function copyReferralLink() {
-    const link = `${window.location.origin}/signup?ref=${userId}`;
-
-    try {
-      await navigator.clipboard.writeText(link);
-      setCopied(true);
-      setError("");
-      setTimeout(() => setCopied(false), 2500);
-    } catch {
-      setError("Unable to copy the referral link. Please try again.");
-    }
-  }
-
-  const referralLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/signup?ref=${userId}`
-      : "";
-
   if (loading) {
     return (
-      <main className="loading-screen">
-        <style>{`
-          * { box-sizing: border-box; }
-
-          html, body {
-            margin: 0 !important;
-            padding: 0 !important;
-            width: 100%;
-            min-height: 100%;
-            background: #080b11 !important;
-          }
-
-          .loading-screen {
-            position: fixed;
-            inset: 0;
-            width: 100%;
-            min-height: 100vh;
-            min-height: 100dvh;
-            margin: 0;
-            padding: 24px;
-            background: #080b11;
-            color: #f7f9fc;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 18px;
-            font-family: Arial, sans-serif;
-            overflow: hidden;
-          }
-
-          .loading-brand {
-            font-size: 30px;
-            font-weight: 900;
-            letter-spacing: -1.5px;
-            margin-bottom: 15px;
-          }
-
-          .loading-brand span { color: #247bff; }
-
-          .loader {
-            width: 54px;
-            height: 54px;
-            border: 3px solid #1c2b40;
-            border-top-color: #247bff;
-            border-right-color: #58a0ff;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-            box-shadow: 0 0 25px #247bff20;
-          }
-
-          .loading-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #f1f5f9;
-            margin: 5px 0 0;
-          }
-
-          .loading-subtitle {
-            font-size: 11px;
-            color: #64748b;
-            margin: 0;
-          }
-
-          .loading-indicator {
-            width: 120px;
-            height: 3px;
-            background: #172334;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 8px;
-          }
-
-          .loading-indicator span {
-            display: block;
-            height: 100%;
-            width: 40%;
-            background: #247bff;
-            border-radius: 10px;
-            animation: progress 1.5s ease-in-out infinite;
-          }
-
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-
-          @keyframes progress {
-            0% { transform: translateX(-110%); }
-            100% { transform: translateX(300%); }
-          }
-        `}</style>
-
-        <div className="loading-brand">
-          Re<span>Trade</span>
+      <main style={styles.page}>
+        <div style={styles.center}>
+          <div style={styles.spinner} />
+          <p>Loading your ReTrade dashboard...</p>
         </div>
-        <div className="loader" />
-        <p className="loading-title">
-          Loading your ReTrade dashboard...
-        </p>
-        <p className="loading-subtitle">
-          Securely preparing your account
-        </p>
-        <div className="loading-indicator">
-          <span />
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main style={styles.page}>
+        <div style={styles.errorCard}>
+          <h2>Dashboard could not load</h2>
+          <p>{error}</p>
+          <button style={styles.button} onClick={loadUser}>
+            Try Again
+          </button>
+          <button
+            style={styles.secondary}
+            onClick={() => router.replace("/login")}
+          >
+            Back to Login
+          </button>
         </div>
       </main>
     );
   }
 
   return (
-    <main className="dashboard">
-      <style>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        html, body {
-          margin: 0 !important;
-          padding: 0 !important;
-          width: 100%;
-          min-height: 100%;
-          background: #080b11 !important;
-          overflow-x: hidden;
-        }
-
-        body {
-          color: #f7f9fc;
-        }
-
-        .dashboard {
-          min-height: 100vh;
-          width: 100%;
-          overflow-x: clip;
-          background: #080b11;
-          color: #f7f9fc;
-          font-family: Arial, sans-serif;
-        }
-
-        .topbar {
-          height: 76px;
-          padding: 0 35px;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          border-bottom: 1px solid #ffffff12;
-          background: #0c111a;
-          position: sticky;
-          top: 0;
-          z-index: 10;
-        }
-
-        .brand {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          font-size: 22px;
-          font-weight: 900;
-          letter-spacing: -1px;
-        }
-
-        .brand span { color: #247bff; }
-
-        .top-right {
-          display: flex;
-          align-items: center;
-          gap: 18px;
-          min-width: 0;
-        }
-
-        .user-email {
-          color: #94a3b8;
-          font-size: 12px;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-          max-width: 260px;
-        }
-
-        .logout {
-          border: 1px solid #ffffff20;
-          color: #cbd5e1;
-          background: transparent;
-          padding: 10px 15px;
-          border-radius: 8px;
-          cursor: pointer;
-          font-size: 12px;
-          flex-shrink: 0;
-        }
-
-        .layout {
-          display: grid;
-          grid-template-columns: 235px minmax(0, 1fr);
-          min-height: calc(100vh - 76px);
-          width: 100%;
-          min-width: 0;
-        }
-
-        .sidebar {
-          border-right: 1px solid #ffffff12;
-          padding: 28px 16px;
-          background: #0c111a;
-          min-width: 0;
-        }
-
-        .nav-label {
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 800;
-          letter-spacing: 1.5px;
-          padding: 0 12px;
-          margin-bottom: 14px;
-        }
-
-        .nav-button {
-          width: 100%;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          padding: 13px 12px;
-          border: 0;
-          border-radius: 9px;
-          background: transparent;
-          color: #94a3b8;
-          text-align: left;
-          font-size: 13px;
-          cursor: pointer;
-          margin-bottom: 5px;
-        }
-
-        .nav-button.active {
-          background: #162d4d;
-          color: #69a8ff;
-          font-weight: 700;
-        }
-
-        .nav-icon {
-          width: 20px;
-          flex-shrink: 0;
-          text-align: center;
-          font-size: 16px;
-        }
-
-        .main {
-          padding: 36px;
-          max-width: 1450px;
-          width: 100%;
-          min-width: 0;
-          margin: 0 auto;
-          align-self: start;
-        }
-
-        .page-heading {
-          display: flex;
-          justify-content: space-between;
-          align-items: flex-start;
-          gap: 15px;
-          margin-bottom: 30px;
-          min-width: 0;
-        }
-
-        .page-heading h1 {
-          font-size: 27px;
-          margin: 0 0 9px;
-          letter-spacing: -1px;
-        }
-
-        .page-heading p {
-          color: #94a3b8;
-          font-size: 13px;
-          line-height: 1.6;
-          margin: 0;
-        }
-
-        .date-label {
-          color: #94a3b8;
-          font-size: 11px;
-          padding: 10px 13px;
-          border: 1px solid #ffffff18;
-          border-radius: 8px;
-          white-space: nowrap;
-        }
-
-        .stats {
-          display: grid;
-          grid-template-columns: repeat(4, minmax(0, 1fr));
-          gap: 16px;
-          margin-bottom: 25px;
-        }
-
-        .stat-card {
-          padding: 22px;
-          border: 1px solid #ffffff13;
-          background: #111925;
-          border-radius: 13px;
-          min-width: 0;
-        }
-
-        .stat-top {
-          color: #94a3b8;
-          font-size: 12px;
-          margin-bottom: 17px;
-        }
-
-        .stat-value {
-          font-size: 26px;
-          font-weight: 800;
-          letter-spacing: -1px;
-          margin-bottom: 8px;
-          overflow-wrap: anywhere;
-        }
-
-        .stat-note {
-          color: #64748b;
-          font-size: 11px;
-          line-height: 1.5;
-        }
-
-        .blue { color: #58a0ff; }
-        .green { color: #43d69a; }
-
-        .content-grid {
-          display: grid;
-          grid-template-columns: minmax(0, 1.5fr) minmax(260px, 1fr);
-          gap: 18px;
-          margin-bottom: 22px;
-        }
-
-        .panel {
-          border: 1px solid #ffffff13;
-          background: #111925;
-          border-radius: 13px;
-          padding: 24px;
-          min-width: 0;
-          width: 100%;
-        }
-
-        .panel h2 {
-          font-size: 16px;
-          margin: 0 0 8px;
-        }
-
-        .panel-description {
-          font-size: 12px;
-          color: #94a3b8;
-          line-height: 1.6;
-          margin: 0 0 22px;
-        }
-
-        .wallet-value {
-          font-size: 35px;
-          font-weight: 800;
-          letter-spacing: -1.5px;
-          margin: 15px 0 8px;
-        }
-
-        .wallet-caption {
-          font-size: 11px;
-          color: #94a3b8;
-        }
-
-        .blue-line {
-          height: 4px;
-          width: 100%;
-          border-radius: 10px;
-          background: linear-gradient(90deg, #247bff, #64b5ff);
-          margin-top: 25px;
-        }
-
-        .referral-panel {
-          background: linear-gradient(145deg, #142b49, #111925 75%);
-          border-color: #247bff40;
-        }
-
-        .referral-rate {
-          font-size: 40px;
-          font-weight: 900;
-          color: #68a9ff;
-          letter-spacing: -2px;
-          margin: 12px 0;
-        }
-
-        .referral-rule {
-          color: #cbd5e1;
-          font-size: 12px;
-          line-height: 1.7;
-        }
-
-        .referral-link {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-top: 20px;
-          min-width: 0;
-        }
-
-        .referral-link input {
-          min-width: 0;
-          flex: 1;
-          width: 100%;
-          background: #080e18;
-          border: 1px solid #ffffff20;
-          color: #94a3b8;
-          padding: 12px;
-          border-radius: 8px;
-          font-size: 11px;
-        }
-
-        .copy-button {
-          border: 0;
-          border-radius: 8px;
-          padding: 12px 15px;
-          background: #247bff;
-          color: white;
-          font-size: 11px;
-          font-weight: 800;
-          cursor: pointer;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        .section-title {
-          font-size: 16px;
-          margin: 0 0 18px;
-        }
-
-        .empty-state {
-          padding: 35px 15px;
-          text-align: center;
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.7;
-          border: 1px dashed #ffffff20;
-          border-radius: 10px;
-        }
-
-        .empty-icon {
-          font-size: 28px;
-          margin-bottom: 12px;
-        }
-
-        .notice {
-          color: #94a3b8;
-          background: #0b1523;
-          border: 1px solid #247bff30;
-          padding: 13px 15px;
-          border-radius: 9px;
-          font-size: 11px;
-          line-height: 1.7;
-          margin-top: 18px;
-        }
-
-        .error-message {
-          color: #ff9ba8;
-          font-size: 12px;
-          margin-top: 12px;
-        }
-
-        .accounts-panel {
-          overflow: hidden;
-        }
-
-        .accounts-header {
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-          gap: 15px;
-          margin-bottom: 22px;
-        }
-
-        .accounts-header h2 {
-          margin: 0 0 8px;
-          font-size: 17px;
-        }
-
-        .accounts-header p {
-          margin: 0;
-          color: #94a3b8;
-          font-size: 12px;
-          line-height: 1.6;
-        }
-
-        .accounts-badge {
-          color: #69a8ff;
-          background: #162d4d;
-          border: 1px solid #247bff35;
-          border-radius: 20px;
-          padding: 7px 11px;
-          font-size: 10px;
-          white-space: nowrap;
-          flex-shrink: 0;
-        }
-
-        .accounts-empty {
-          padding: 35px 20px;
-          text-align: center;
-          background: #0c1420;
-          border: 1px dashed #ffffff20;
-          border-radius: 12px;
-        }
-
-        .accounts-empty-icon {
-          width: 58px;
-          height: 58px;
-          margin: 0 auto 16px;
-          border-radius: 16px;
-          background: #162d4d;
-          color: #69a8ff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 27px;
-        }
-
-        .accounts-empty h3 {
-          color: #e2e8f0;
-          font-size: 15px;
-          margin: 0 0 9px;
-        }
-
-        .accounts-empty p {
-          color: #64748b;
-          font-size: 12px;
-          line-height: 1.7;
-          max-width: 390px;
-          margin: 0 auto;
-        }
-
-        .accounts-info {
-          margin-top: 18px;
-          padding: 14px 15px;
-          border-radius: 9px;
-          background: #0b1523;
-          border: 1px solid #247bff25;
-          color: #94a3b8;
-          font-size: 11px;
-          line-height: 1.7;
-        }
-
-        .transaction-panel {
-          overflow: hidden;
-        }
-
-        .table-wrap {
-          display: block;
-          width: 100%;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .table {
-          width: 100%;
-          border-collapse: collapse;
-          min-width: 450px;
-        }
-
-        .table th {
-          text-align: left;
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 700;
-          padding: 14px 10px;
-          border-bottom: 1px solid #ffffff13;
-          white-space: nowrap;
-        }
-
-        .table td {
-          color: #94a3b8;
-          font-size: 12px;
-          padding: 17px 10px;
-          border-bottom: 1px solid #ffffff0c;
-        }
-
-        .no-transactions {
-          text-align: center;
-          color: #64748b !important;
-          padding: 30px 15px !important;
-        }
-
-        .mobile-transactions {
-          display: none;
-          width: 100%;
-        }
-
-        .transaction-empty {
-          padding: 20px 14px;
-          background: #0c1420;
-          border: 1px dashed #26364d;
-          border-radius: 12px;
-          text-align: center;
-          width: 100%;
-          min-height: 0;
-          height: auto;
-        }
-
-        .transaction-empty-icon {
-          width: 44px;
-          height: 44px;
-          margin: 0 auto 12px;
-          border-radius: 13px;
-          background: #162d4d;
-          color: #69a8ff;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 22px;
-        }
-
-        .transaction-empty-title {
-          color: #e2e8f0;
-          font-size: 14px;
-          font-weight: 700;
-          margin-bottom: 8px;
-        }
-
-        .transaction-empty-text {
-          color: #64748b;
-          font-size: 11px;
-          line-height: 1.7;
-          max-width: 320px;
-          margin: 0 auto;
-        }
-
-        .footer-note {
-          text-align: center;
-          color: #475569;
-          font-size: 10px;
-          padding: 25px 0 5px;
-        }
-
-        @media(max-width: 1000px) {
-          .stats {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-          }
-
-          .content-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .main {
-            padding: 28px;
-          }
-        }
-
-        @media(max-width: 700px) {
-          .topbar {
-            padding: 0 15px;
-            height: 62px;
-          }
-
-          .brand {
-            font-size: 19px;
-          }
-
-          .top-right {
-            gap: 8px;
-          }
-
-          .user-email {
-            display: none;
-          }
-
-          .logout {
-            padding: 9px 11px;
-            font-size: 11px;
-          }
-
-          .layout {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr);
-            grid-template-rows: auto 1fr;
-            min-height: calc(100vh - 62px);
-            width: 100%;
-          }
-
-          .sidebar {
-            display: flex;
-            flex-direction: row;
-            align-items: center;
-            gap: 7px;
-            width: 100%;
-            min-width: 0;
-            overflow-x: auto;
-            overflow-y: hidden;
-            white-space: nowrap;
-            padding: 11px 12px;
-            border-right: 0;
-            border-bottom: 1px solid #ffffff12;
-            scrollbar-width: none;
-            -webkit-overflow-scrolling: touch;
-          }
-
-          .sidebar::-webkit-scrollbar {
-            display: none;
-          }
-
-          .nav-label {
-            display: none;
-          }
-
-          .nav-button {
-            width: auto;
-            min-width: max-content;
-            flex: 0 0 auto;
-            padding: 10px 12px;
-            margin: 0;
-            font-size: 11px;
-            white-space: nowrap;
-            justify-content: center;
-          }
-
-          .nav-icon {
-            width: auto;
-          }
-
-          .main {
-            padding: 22px 14px 28px;
-            width: 100%;
-            max-width: none;
-            min-width: 0;
-            margin: 0;
-            align-self: start;
-          }
-
-          .page-heading {
-            margin-bottom: 20px;
-            gap: 8px;
-          }
-
-          .page-heading h1 {
-            font-size: 22px;
-            line-height: 1.25;
-          }
-
-          .page-heading p {
-            font-size: 11px;
-          }
-
-          .date-label {
-            display: none;
-          }
-
-          .stats {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-bottom: 16px;
-          }
-
-          .stat-card {
-            padding: 15px 13px;
-            border-radius: 11px;
-          }
-
-          .stat-top {
-            font-size: 10px;
-            margin-bottom: 12px;
-            line-height: 1.5;
-          }
-
-          .stat-value {
-            font-size: 21px;
-            margin-bottom: 6px;
-          }
-
-          .stat-note {
-            font-size: 10px;
-          }
-
-          .content-grid {
-            grid-template-columns: minmax(0, 1fr);
-            gap: 13px;
-            margin-bottom: 15px;
-          }
-
-          .panel {
-            padding: 18px 15px;
-            border-radius: 11px;
-          }
-
-          .panel h2 {
-            font-size: 15px;
-          }
-
-          .panel-description {
-            font-size: 11px;
-            margin-bottom: 16px;
-          }
-
-          .wallet-value {
-            font-size: 30px;
-          }
-
-          .referral-rate {
-            font-size: 34px;
-          }
-
-          .referral-rule {
-            font-size: 11px;
-          }
-
-          .referral-link {
-            gap: 6px;
-          }
-
-          .referral-link input {
-            padding: 10px 8px;
-            font-size: 9px;
-          }
-
-          .copy-button {
-            padding: 11px 12px;
-            font-size: 10px;
-          }
-
-          .empty-state {
-            padding: 25px 12px;
-            font-size: 11px;
-          }
-
-          .accounts-header {
-            flex-direction: column;
-            gap: 12px;
-          }
-
-          .accounts-header h2 {
-            font-size: 15px;
-          }
-
-          .accounts-header p {
-            font-size: 11px;
-          }
-
-          .accounts-badge {
-            align-self: flex-start;
-          }
-
-          .accounts-empty {
-            padding: 25px 13px;
-          }
-
-          .accounts-empty-icon {
-            width: 48px;
-            height: 48px;
-            font-size: 23px;
-            margin-bottom: 13px;
-          }
-
-          .accounts-empty h3 {
-            font-size: 14px;
-          }
-
-          .accounts-empty p {
-            font-size: 11px;
-          }
-
-          .accounts-info {
-            font-size: 10px;
-            padding: 12px;
-          }
-
-          .transaction-panel {
-            padding: 17px 13px;
-            overflow: hidden;
-          }
-
-          .transaction-panel .section-title {
-            font-size: 15px;
-            margin-bottom: 14px;
-          }
-
-          .transaction-panel .table-wrap {
-            display: none !important;
-          }
-
-          .transaction-panel .mobile-transactions {
-            display: block !important;
-            width: 100%;
-          }
-
-          .transaction-empty {
-            padding: 18px 12px;
-          }
-
-          .transaction-empty-icon {
-            width: 42px;
-            height: 42px;
-            margin-bottom: 10px;
-          }
-
-          .transaction-empty-title {
-            font-size: 13px;
-          }
-
-          .transaction-empty-text {
-            font-size: 10px;
-            line-height: 1.6;
-          }
-
-          .footer-note {
-            padding: 20px 0 5px;
-          }
-        }
-
-        @media(max-width: 380px) {
-          .main {
-            padding-left: 11px;
-            padding-right: 11px;
-          }
-
-          .stats {
-            gap: 8px;
-          }
-
-          .stat-card {
-            padding: 12px 10px;
-          }
-
-          .stat-value {
-            font-size: 19px;
-          }
-
-          .nav-button {
-            padding: 9px 10px;
-            font-size: 10px;
-          }
-
-          .panel {
-            padding: 15px 12px;
-          }
-
-          .transaction-panel {
-            padding: 15px 11px;
-          }
-        }
-      `}</style>
-
-      <header className="topbar">
-        <div className="brand">
-          Re<span>Trade</span>
-        </div>
-
-        <div className="top-right">
-          <span className="user-email">{userEmail}</span>
-          <button className="logout" onClick={handleLogout}>
-            Log out ↗
-          </button>
-        </div>
+    <main style={styles.page}>
+      <header style={styles.header}>
+        <h1 style={styles.logo}>ReTrade<span>.</span></h1>
+        <button style={styles.logout} onClick={handleLogout}>
+          Log Out
+        </button>
       </header>
 
-      <div className="layout">
-        <aside className="sidebar">
-          <div className="nav-label">MENU</div>
+      <section style={styles.content}>
+        <p style={styles.eyebrow}>TRADER DASHBOARD</p>
+        <h2 style={styles.title}>Welcome to ReTrade</h2>
+        <p style={styles.muted}>{email}</p>
 
-          <button
-            className={`nav-button ${activeTab === "overview" ? "active" : ""}`}
-            onClick={() => setActiveTab("overview")}
-          >
-            <span className="nav-icon">▦</span>
-            Overview
-          </button>
+        <div style={styles.card}>
+          <p style={styles.muted}>Account status</p>
+          <h3 style={styles.active}>Account Connected</h3>
+          <p style={styles.muted}>
+            Your ReTrade account is ready. Verified cashback
+            transactions will appear here.
+          </p>
+        </div>
 
-          <button
-            className={`nav-button ${activeTab === "referrals" ? "active" : ""}`}
-            onClick={() => setActiveTab("referrals")}
-          >
-            <span className="nav-icon">♧</span>
-            Referrals
-          </button>
-
-          <button
-            className={`nav-button ${activeTab === "accounts" ? "active" : ""}`}
-            onClick={() => setActiveTab("accounts")}
-          >
-            <span className="nav-icon">◎</span>
-            Trading Accounts
-          </button>
-
-          <button
-            className={`nav-button ${activeTab === "transactions" ? "active" : ""}`}
-            onClick={() => setActiveTab("transactions")}
-          >
-            <span className="nav-icon">⇄</span>
-            Transactions
-          </button>
-        </aside>
-
-        <section className="main">
-          <div className="page-heading">
-            <div>
-              <h1>
-                {activeTab === "overview" && "Dashboard Overview"}
-                {activeTab === "referrals" && "Referral Program"}
-                {activeTab === "accounts" && "Trading Accounts"}
-                {activeTab === "transactions" && "Transactions"}
-              </h1>
-
-              <p>
-                Welcome back. Here's your ReTrade account overview.
-              </p>
-            </div>
-
-            <div className="date-label">RETRADE ACCOUNT</div>
+        <div style={styles.grid}>
+          <div style={styles.card}>
+            <p style={styles.muted}>Cashback Balance</p>
+            <h2>$0.00</h2>
           </div>
 
-          {activeTab === "overview" && (
-            <>
-              <div className="stats">
-                <div className="stat-card">
-                  <div className="stat-top">Available Balance</div>
-                  <div className="stat-value">$0.00</div>
-                  <div className="stat-note">Ready for withdrawal</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Total Cashback</div>
-                  <div className="stat-value green">$0.00</div>
-                  <div className="stat-note">Verified cashback</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Referral Earnings</div>
-                  <div className="stat-value blue">$0.00</div>
-                  <div className="stat-note">Verified referral commission</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Trading Accounts</div>
-                  <div className="stat-value">0</div>
-                  <div className="stat-note">Connected accounts</div>
-                </div>
-              </div>
-
-              <div className="content-grid">
-                <div className="panel">
-                  <h2>My Wallet</h2>
-                  <p className="panel-description">
-                    Your combined ReTrade wallet balance.
-                  </p>
-                  <div className="wallet-value">$0.00</div>
-                  <div className="wallet-caption">
-                    Available balance · USD
-                  </div>
-                  <div className="blue-line" />
-                </div>
-
-                <div className="panel referral-panel">
-                  <h2>Refer & Earn</h2>
-                  <div className="referral-rate">10%</div>
-                  <p className="referral-rule">
-                    Earn 10% of the verified company profit generated by
-                    your referred clients.
-                  </p>
-                  <p className="referral-rule">
-                    Maximum lifetime referral earnings: <strong>$1,000</strong>.
-                  </p>
-                  <button className="copy-button" onClick={copyReferralLink}>
-                    {copied ? "Copied ✓" : "Copy referral link"}
-                  </button>
-                </div>
-              </div>
-
-              <div className="panel">
-                <h2 className="section-title">Recent Activity</h2>
-                <div className="empty-state">
-                  <div className="empty-icon">⇄</div>
-                  No transactions yet.
-                  <br />
-                  Your verified cashback and referral activity will appear here.
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === "referrals" && (
-            <>
-              <div className="stats">
-                <div className="stat-card">
-                  <div className="stat-top">Referral Rate</div>
-                  <div className="stat-value blue">10%</div>
-                  <div className="stat-note">Of verified company profit</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Total Referral Earnings</div>
-                  <div className="stat-value green">$0.00</div>
-                  <div className="stat-note">Maximum $1,000</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Total Referrals</div>
-                  <div className="stat-value">0</div>
-                  <div className="stat-note">People invited by you</div>
-                </div>
-
-                <div className="stat-card">
-                  <div className="stat-top">Company Profit Generated</div>
-                  <div className="stat-value">$0.00</div>
-                  <div className="stat-note">From your referrals</div>
-                </div>
-              </div>
-
-              <div className="panel">
-                <h2>Invite Friends & Earn</h2>
-                <p className="panel-description">
-                  Share your personal referral link. When your invited
-                  clients generate verified company profit, you earn 10%.
-                </p>
-
-                <div className="referral-link">
-                  <input
-                    readOnly
-                    value={referralLink}
-                    aria-label="Your referral link"
-                  />
-                  <button className="copy-button" onClick={copyReferralLink}>
-                    {copied ? "Copied ✓" : "Copy"}
-                  </button>
-                </div>
-
-                {error && (
-                  <div className="error-message">{error}</div>
-                )}
-
-                <div className="notice">
-                  Example: If a referred client generates $33 in verified
-                  company profit, your referral commission is $3.30.
-                  Referral earnings stop when your lifetime total reaches
-                  $1,000.
-                </div>
-              </div>
-
-              <div className="panel" style={{ marginTop: 20 }}>
-                <h2 className="section-title">Referral History</h2>
-                <div className="empty-state">
-                  <div className="empty-icon">♧</div>
-                  No referrals yet.
-                  <br />
-                  Your invited clients and commissions will appear here.
-                </div>
-              </div>
-            </>
-          )}
-
-          {activeTab === "accounts" && (
-            <div className="panel accounts-panel">
-              <div className="accounts-header">
-                <div>
-                  <h2>Connected Trading Accounts</h2>
-                  <p>
-                    Manage your eligible broker accounts connected to ReTrade.
-                  </p>
-                </div>
-                <div className="accounts-badge">0 Connected</div>
-              </div>
-
-              <div className="accounts-empty">
-                <div className="accounts-empty-icon">◎</div>
-                <h3>No trading accounts yet</h3>
-                <p>
-                  You haven't connected any trading accounts to ReTrade.
-                  Your eligible broker accounts will appear here once
-                  connected and verified.
-                </p>
-              </div>
-
-              <div className="accounts-info">
-                <strong>Account security:</strong> ReTrade does not need
-                your MT4 or MT5 trading password or investor password
-                to display your connected account information.
-              </div>
-            </div>
-          )}
-
-          {activeTab === "transactions" && (
-            <div className="panel transaction-panel">
-              <h2 className="section-title">Transaction History</h2>
-
-              <div className="table-wrap">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>DESCRIPTION</th>
-                      <th>TYPE</th>
-                      <th>AMOUNT</th>
-                      <th>STATUS</th>
-                    </tr>
-                  </thead>
-
-                  <tbody>
-                    <tr>
-                      <td colSpan={4} className="no-transactions">
-                        No transactions available yet.
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="mobile-transactions">
-                <div className="transaction-empty">
-                  <div className="transaction-empty-icon">⇄</div>
-                  <div className="transaction-empty-title">
-                    No transactions yet
-                  </div>
-                  <div className="transaction-empty-text">
-                    Your cashback, referral earnings and withdrawal
-                    history will appear here once transactions are available.
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="footer-note">
-            © ReTrade. All rights reserved.
+          <div style={styles.card}>
+            <p style={styles.muted}>Trading Accounts</p>
+            <h2>0</h2>
           </div>
-        </section>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }
+
+const styles: Record<string, React.CSSProperties> = {
+  page: {
+    minHeight: "100vh",
+    width: "100%",
+    boxSizing: "border-box",
+    background: "#080b11",
+    color: "#ffffff",
+    padding: "24px",
+    fontFamily: "Arial, sans-serif",
+  },
+  header: {
+    maxWidth: "1100px",
+    margin: "0 auto",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    borderBottom: "1px solid #202a3a",
+    paddingBottom: "20px",
+  },
+  logo: {
+    fontSize: "26px",
+    fontWeight: 800,
+  },
+  logout: {
+    background: "#182438",
+    color: "#ffffff",
+    border: "1px solid #30415a",
+    borderRadius: "8px",
+    padding: "11px 18px",
+    cursor: "pointer",
+  },
+  content: {
+    maxWidth: "1100px",
+    margin: "45px auto",
+  },
+  eyebrow: {
+    color: "#438cff",
+    fontSize: "12px",
+    fontWeight: 700,
+    letterSpacing: "2px",
+  },
+  title: {
+    fontSize: "30px",
+    margin: "10px 0",
+  },
+  muted: {
+    color: "#98a5b8",
+    lineHeight: 1.6,
+  },
+  card: {
+    background: "#101722",
+    border: "1px solid #202d40",
+    borderRadius: "14px",
+    padding: "24px",
+    marginTop: "22px",
+    minWidth: 0,
+  },
+  grid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: "16px",
+  },
+  active: {
+    color: "#52d69b",
+  },
+  center: {
+    minHeight: "80vh",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#aab6c8",
+  },
+  spinner: {
+    width: "32px",
+    height: "32px",
+    border: "3px solid #26354a",
+    borderTop: "3px solid #2878f0",
+    borderRadius: "50%",
+    marginBottom: "15px",
+  },
+  errorCard: {
+    maxWidth: "420px",
+    margin: "100px auto",
+    padding: "25px",
+    background: "#101722",
+    border: "1px solid #303d50",
+    borderRadius: "14px",
+  },
+  button: {
+    background: "#2878f0",
+    color: "#fff",
+    border: 0,
+    borderRadius: "8px",
+    padding: "12px 20px",
+    cursor: "pointer",
+    marginRight: "8px",
+  },
+  secondary: {
+    background: "#26354a",
+    color: "#fff",
+    border: 0,
+    borderRadius: "8px",
+    padding: "12px 20px",
+    cursor: "pointer",
+    marginTop: "10px",
+  },
+};
