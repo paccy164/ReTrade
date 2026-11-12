@@ -238,9 +238,9 @@ export default function Home() {
           .floating { display: none; }
         }
         @media(max-width: 420px) {
-          .container { width: calc(100% - 30px); }
+          .container { width: calc(100% - 35px); }
           .brand-logo {
-  width: 165px;
+  width: 180px;
   height: 58px;
 }
           .nav-actions { gap: 9px; }
