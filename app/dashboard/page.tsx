@@ -48,16 +48,139 @@ export default function DashboardPage() {
     try {
       await navigator.clipboard.writeText(link);
       setCopied(true);
+      setError("");
       setTimeout(() => setCopied(false), 2500);
     } catch {
       setError("Unable to copy the referral link. Please try again.");
     }
   }
 
-  
-if (loading) {
+  const referralLink =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/signup?ref=${userId}`
+      : "";
+
+  if (loading) {
+    return (
+      <main className="loading-screen">
+        <style>{`
+          * {
+            box-sizing: border-box;
+          }
+
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            width: 100%;
+            min-height: 100%;
+            background: #080b11 !important;
+          }
+
+          .loading-screen {
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            min-height: 100vh;
+            min-height: 100dvh;
+            margin: 0;
+            padding: 24px;
+            background: #080b11;
+            color: #f7f9fc;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 18px;
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+          }
+
+          .loading-brand {
+            font-size: 30px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            margin-bottom: 15px;
+          }
+
+          .loading-brand span {
+            color: #247bff;
+          }
+
+          .loader {
+            width: 54px;
+            height: 54px;
+            border: 3px solid #1c2b40;
+            border-top-color: #247bff;
+            border-right-color: #58a0ff;
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            box-shadow: 0 0 25px #247bff20;
+          }
+
+          .loading-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f1f5f9;
+            margin: 5px 0 0;
+          }
+
+          .loading-subtitle {
+            font-size: 11px;
+            color: #64748b;
+            margin: 0;
+          }
+
+          .loading-indicator {
+            width: 120px;
+            height: 3px;
+            background: #172334;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 8px;
+          }
+
+          .loading-indicator span {
+            display: block;
+            height: 100%;
+            width: 40%;
+            background: #247bff;
+            border-radius: 10px;
+            animation: progress 1.5s ease-in-out infinite;
+          }
+
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+
+          @keyframes progress {
+            0% { transform: translateX(-110%); }
+            100% { transform: translateX(300%); }
+          }
+        `}</style>
+
+        <div className="loading-brand">
+          re<span>trade</span>
+        </div>
+
+        <div className="loader" />
+
+        <p className="loading-title">
+          Loading your Retrade dashboard...
+        </p>
+
+        <p className="loading-subtitle">
+          Securely preparing your account
+        </p>
+
+        <div className="loading-indicator">
+          <span />
+        </div>
+      </main>
+    );
+  }
+
   return (
-    <main className="loading-screen">
+    <main className="dashboard">
       <style>{`
         * {
           box-sizing: border-box;
@@ -69,142 +192,11 @@ if (loading) {
           width: 100%;
           min-height: 100%;
           background: #080b11 !important;
-        }
-
-        .loading-screen {
-          position: fixed;
-          inset: 0;
-          width: 100%;
-          min-height: 100vh;
-          min-height: 100dvh;
-          margin: 0;
-          padding: 24px;
-          background: #080b11;
-          color: white;
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-          align-items: center;
-          gap: 20px;
-          font-family: Arial, sans-serif;
-          overflow: hidden;
-        }
-
-        .loading-brand {
-          font-size: 30px;
-          font-weight: 900;
-          letter-spacing: -1.5px;
-          margin-bottom: 15px;
-        }
-
-        .loading-brand span {
-          color: #247bff;
-        }
-
-        .loader {
-          width: 54px;
-          height: 54px;
-          border: 3px solid #1c2b40;
-          border-top-color: #247bff;
-          border-right-color: #58a0ff;
-          border-radius: 50%;
-          animation: spin .8s linear infinite;
-          box-shadow: 0 0 25px #247bff20;
-        }
-
-        .loading-title {
-          font-size: 14px;
-          font-weight: 600;
-          color: #f1f5f9;
-          margin: 5px 0 0;
-        }
-
-        .loading-subtitle {
-          font-size: 11px;
-          color: #64748b;
-          margin: 0;
-        }
-
-        .loading-indicator {
-          width: 120px;
-          height: 3px;
-          background: #172334;
-          border-radius: 10px;
-          overflow: hidden;
-          margin-top: 8px;
-        }
-
-        .loading-indicator span {
-          display: block;
-          height: 100%;
-          width: 40%;
-          background: #247bff;
-          border-radius: 10px;
-          animation: progress 1.5s ease-in-out infinite;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
-        @keyframes progress {
-          0% { transform: translateX(-110%); }
-          100% { transform: translateX(300%); }
-        }
-      `}</style>
-
-      <div className="loading-brand">
-        re<span>trade</span>
-      </div>
-
-      <div className="loader" />
-
-      <p className="loading-title">
-        Loading your Retrade dashboard...
-      </p>
-
-      <p className="loading-subtitle">
-        Securely preparing your account
-      </p>
-
-      <div className="loading-indicator">
-        <span />
-      </div>
-    </main>
-  );
-}
-
-          .loader {
-            width: 38px;
-            height: 38px;
-            border: 3px solid #26364d;
-            border-top-color: #247bff;
-            border-radius: 50%;
-            animation: spin .8s linear infinite;
-          }
-          @keyframes spin { to { transform: rotate(360deg); } }
-        `}</style>
-      </main>
-    );
-  }
-
-  const referralLink =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/signup?ref=${userId}`
-      : "";
-
-  return (
-    <main className="dashboard">
-      <style>{`
-        * {
-          box-sizing: border-box;
-        }
-
-        html, body {
-          margin: 0;
-          padding: 0;
-          background: #080b11;
           overflow-x: hidden;
+        }
+
+        body {
+          color: #f7f9fc;
         }
 
         .dashboard {
@@ -267,6 +259,7 @@ if (loading) {
           display: grid;
           grid-template-columns: 235px minmax(0, 1fr);
           min-height: calc(100vh - 76px);
+          width: 100%;
           min-width: 0;
         }
 
@@ -532,100 +525,6 @@ if (loading) {
           margin-top: 12px;
         }
 
-        /* TRANSACTIONS */
-
-        .transaction-panel {
-          overflow: hidden;
-        }
-
-        .table-wrap {
-          width: 100%;
-          overflow-x: auto;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .table {
-          width: 100%;
-          border-collapse: collapse;
-          min-width: 17px;
-        }
-
-        .table th {
-          text-align: left;
-          color: #64748b;
-          font-size: 10px;
-          font-weight: 700;
-          padding: 14px 10px;
-          border-bottom: 1px solid #ffffff13;
-          white-space: nowrap;
-        }
-
-        .table td {
-          color: #94a3b8;
-          font-size: 12px;
-          padding: 17px 10px;
-          border-bottom: 1px solid #ffffff0c;
-        }
-
-        .no-transactions {
-          text-align: center;
-          color: #64748b !important;
-          padding: 30px 15px !important;
-        }
-
-        .mobile-transactions {
-          display: none;
-        }
-
-        .transaction-card {
-          padding: 17px;
-          background: #0c1420;
-          border: 1px solid #ffffff12;
-          border-radius: 11px;
-          margin-top: 12px;
-        }
-
-        .transaction-card-top {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          margin-bottom: 15px;
-        }
-
-        .transaction-card-title {
-          color: #f1f5f9;
-          font-size: 13px;
-          font-weight: 700;
-        }
-
-        .transaction-status {
-          color: #94a3b8;
-          font-size: 10px;
-          background: #172334;
-          border-radius: 20px;
-          padding: 6px 10px;
-          white-space: nowrap;
-        }
-
-        .transaction-details {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 15px;
-        }
-
-        .transaction-detail-label {
-          color: #64748b;
-          font-size: 10px;
-          margin-bottom: 6px;
-        }
-
-        .transaction-detail-value {
-          color: #cbd5e1;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
         /* TRADING ACCOUNTS */
 
         .accounts-panel {
@@ -709,6 +608,91 @@ if (loading) {
           line-height: 1.7;
         }
 
+        /* TRANSACTIONS - DESKTOP */
+
+        .transaction-panel {
+          overflow: hidden;
+        }
+
+        .table-wrap {
+          display: block;
+          width: 100%;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 450px;
+        }
+
+        .table th {
+          text-align: left;
+          color: #64748b;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 14px 10px;
+          border-bottom: 1px solid #ffffff13;
+          white-space: nowrap;
+        }
+
+        .table td {
+          color: #94a3b8;
+          font-size: 12px;
+          padding: 17px 10px;
+          border-bottom: 1px solid #ffffff0c;
+        }
+
+        .no-transactions {
+          text-align: center;
+          color: #64748b !important;
+          padding: 30px 15px !important;
+        }
+
+        /* TRANSACTIONS - MOBILE */
+
+        .mobile-transactions {
+          display: none;
+        }
+
+        .transaction-empty {
+          padding: 30px 18px;
+          background: #0c1420;
+          border: 1px dashed #26364d;
+          border-radius: 12px;
+          text-align: center;
+          width: 100%;
+        }
+
+        .transaction-empty-icon {
+          width: 56px;
+          height: 56px;
+          margin: 0 auto 15px;
+          border-radius: 16px;
+          background: #162d4d;
+          color: #69a8ff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 26px;
+        }
+
+        .transaction-empty-title {
+          color: #e2e8f0;
+          font-size: 14px;
+          font-weight: 700;
+          margin-bottom: 9px;
+        }
+
+        .transaction-empty-text {
+          color: #64748b;
+          font-size: 11px;
+          line-height: 1.8;
+          max-width: 320px;
+          margin: 0 auto;
+        }
+
         .footer-note {
           text-align: center;
           color: #475569;
@@ -755,7 +739,7 @@ if (loading) {
             overflow-x: auto;
             overflow-y: hidden;
             white-space: nowrap;
-            padding: 12px 12px;
+            padding: 12px;
             border-right: 0;
             border-bottom: 1px solid #ffffff12;
             scrollbar-width: none;
@@ -843,57 +827,33 @@ if (loading) {
             font-size: 11px;
           }
 
-          .accounts-info {
-            font-size: 11px;
-          }
-
-          /* Transactions mobile */
+          /* Transactions mobile: hide table completely */
 
           .transaction-panel {
             padding: 18px 15px;
+            overflow: hidden;
           }
 
           .transaction-panel .section-title {
             font-size: 16px;
-            margin-bottom: 16px;
+            margin-bottom: 17px;
           }
 
-          .table-wrap {
-            display: none;
+          .transaction-panel .table-wrap {
+            display: none !important;
           }
 
-          .mobile-transactions {
-            display: block;
+          .transaction-panel .mobile-transactions {
+            display: block !important;
+            width: 100%;
           }
 
           .transaction-empty {
-            padding: 28px 13px;
+            padding: 28px 14px;
             background: #0c1420;
-            border: 1px dashed #ffffff20;
+            border: 1px dashed #26364d;
             border-radius: 11px;
-            text-align: center;
-          }
-
-          .transaction-empty-icon {
-            font-size: 15px;
-            margin-bottom: 12px;
-          }
-
-          .transaction-empty-title {
-            color: #cbd5e1;
-            font-size: 13px;
-            font-weight: 700;
-            margin-bottom: 7px;
-          }
-
-          .transaction-empty-text {
-            color: #64748b;
-            font-size: 11px;
-            line-height: 1.7;
-          }
-
-          .referral-link {
-            flex-wrap: nowrap;
+            width: 100%;
           }
 
           .referral-link input {
@@ -1006,6 +966,8 @@ if (loading) {
             <div className="date-label">RETRADE ACCOUNT</div>
           </div>
 
+          {/* OVERVIEW */}
+
           {activeTab === "overview" && (
             <>
               <div className="stats">
@@ -1037,6 +999,7 @@ if (loading) {
               <div className="content-grid">
                 <div className="panel">
                   <h2>My Wallet</h2>
+
                   <p className="panel-description">
                     Your combined Retrade wallet balance.
                   </p>
@@ -1052,6 +1015,7 @@ if (loading) {
 
                 <div className="panel referral-panel">
                   <h2>Refer & Earn</h2>
+
                   <div className="referral-rate">10%</div>
 
                   <p className="referral-rule">
@@ -1084,6 +1048,8 @@ if (loading) {
               </div>
             </>
           )}
+
+          {/* REFERRALS */}
 
           {activeTab === "referrals" && (
             <>
@@ -1204,7 +1170,6 @@ if (loading) {
             <div className="panel transaction-panel">
               <h2 className="section-title">Transaction History</h2>
 
-              {/* Desktop table */}
               <div className="table-wrap">
                 <table className="table">
                   <thead>
@@ -1226,7 +1191,6 @@ if (loading) {
                 </table>
               </div>
 
-              {/* Mobile layout */}
               <div className="mobile-transactions">
                 <div className="transaction-empty">
                   <div className="transaction-empty-icon">⇄</div>
