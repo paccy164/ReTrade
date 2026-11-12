@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
 import { createClient } from '../../lib/supabase/client';
 
@@ -219,13 +218,10 @@ export default function DashboardLayout({
         <aside className={`retrade-sidebar ${mobileMenuOpen ? 'open' : ''}`}>
           <div className="sidebar-brand">
             <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
-              <Image 
+              <img 
                 src="https://i.ibb.co/VWm9XpLT/Photoroom-20261112-010447.png" 
                 alt="ReTrade Logo" 
-                width={130} 
-                height={35} 
-                style={{ objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
-                priority
+                style={{ height: '32px', width: 'auto', objectFit: 'contain', filter: 'brightness(0) invert(1)' }} 
               />
             </Link>
             <span style={{ fontSize: '10px', background: '#1e293b', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8', fontWeight: 700 }}>PRO</span>
