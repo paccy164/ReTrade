@@ -15,19 +15,49 @@ type Tab =
 const LOGO_URL =
   "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
-const brokers = [  {
+const brokers = [  
+type Broker = {
+  id: string;
+  name: string;
+  image: string;
+  description: string;
+  link: string;
+  alternativeLink?: string;
+  code: string;
+  availability: string;
+};
+
+const BROKERS: Broker[] = [
+  {
+    id: "XM",
     name: "XM",
-    logo: "https://www.google.com/s2/favicons?domain=xm.com&sz=128",
+    image: "https://www.google.com/s2/favicons?domain=xm.com&sz=128",
+    description: "Explore XM trading accounts and register through the official broker website.",
+    link: "https://www.xm.com/",
+    code: "Contact support",
+    availability: "New and existing clients",
   },
   {
+    id: "HFM",
     name: "HFM",
-    logo: "https://www.google.com/s2/favicons?domain=hfm.com&sz=128",
+    image: "https://www.google.com/s2/favicons?domain=hfm.com&sz=128",
+    description: "Register or access your HFM account using our partner links.",
+    link: "https://www.hfm.com/sv/en/?refid=30486859",
+    alternativeLink: "https://affs.click/XwgFJ",
+    code: "CDHQR",
+    availability: "New and existing clients",
   },
   {
+    id: "JustMarkets",
     name: "JustMarkets",
-    logo: "https://www.google.com/s2/favicons?domain=justmarkets.com&sz=128",
+    image: "https://www.google.com/s2/favicons?domain=justmarkets.com&sz=128",
+    description: "Register with JustMarkets using our partner link.",
+    link: "https://one.justmarkets.link/a/lkpf70rgxi",
+    code: "lkpf70rgxi",
+    availability: "New users only",
   },
-{
+];
+
     id: "HFM",
     name: "HFM",
     image: "https://logo.clearbit.com/hfm.com",
