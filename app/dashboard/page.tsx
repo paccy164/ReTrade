@@ -624,7 +624,7 @@ export default function DashboardPage() {
         .table {
           width: 100%;
           border-collapse: collapse;
-          min-width: 18px;
+          min-width: 450px;
         }
 
         .table th {
@@ -654,15 +654,16 @@ export default function DashboardPage() {
 
         .mobile-transactions {
           display: none;
-        }
-
-        .transaction-empty {
-          padding: 30px 18px;
-          background: #0c1420;
-          border: 1px dashed #26364d;
-          border-radius: 12px;
-          text-align: center;
-          width: 100%;
+.transaction-empty {
+  padding: 18px 14px;
+  background: #0c1420;
+  border: 1px dashed #26364d;
+  border-radius: 12px;
+  text-align: center;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+        
         }
 
         .transaction-empty-icon {
