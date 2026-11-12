@@ -4,19 +4,171 @@
 import { useEffect, useState } from "react";
 import { createClient } from "../../lib/supabase/client";
 
-type Tab = "overview" | "accounts" | "transactions" | "referrals";
+type Tab =
+  | "overview"
+  | "brokers"
+  | "accounts"
+  | "transactions"
+  | "referrals"
+  | "payout";
+
+type Broker = {
+  id: string;
+  name: string;
+  slug: string;
+  cashback_rate: number;
+  is_active: boolean;
+};
+
+type BrokerAccount = {
+  id: string;
+  broker_id: string;
+  account_number: string;
+  verification_status: "pending" | "verified" | "rejected";
+  created_at: string;
+};
+
+type CashbackTransaction = {
+  id: string;
+  cashback_amount: number;
+  status: string;
+  created_at: string;
+};
 
 const LOGO_URL =
   "https://i.postimg.cc/2yRW0mVm/Photoroom-20261112-085347.png";
 
+const BROKER_CONFIG = [
+  {
+    slug: "xm",
+    name: "XM",
+    initials: "XM",
+    link: "https://affs.click/XwgFJ",
+    code: "CDHQR",
+    audience: "New and existing clients",
+  },
+  {
+    slug: "hfm",
+    name: "HFM",
+    initials: "HFM",
+    link: "https://www.hfm.com/sv/en/?refid=30486859",
+    code: "",
+    audience: "New and existing clients",
+  },
+  {
+    slug: "justmarkets",
+    name: "JustMarkets",
+    initials: "JM",
+    link: "https://one.justmarkets.link/a/lkpf70rgxi",
+    code: "lkpf70rgxi",
+    audience: "New clients only",
+  },
+];
+
+const NAVIGATION: {
+  id: Tab;
+  label: string;
+  icon: string;
+}[] = [
+  { id: "overview", label: "Overview", icon: "⌂" },
+  { id: "brokers", label: "Explore Brokers", icon: "◎" },
+  { id: "accounts", label: "Trading Accounts", icon: "▣" },
+  { id: "transactions", label: "Transactions", icon: "⇄" },
+  { id: "referrals", label: "Referrals", icon: "♧" },
+  { id: "payout", label: "Payout", icon: "↗" },
+];
+
 export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<Tab>("overview");
   const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
   const [signingOut, setSigningOut] = useState(false);
 
+  const [brokers, setBrokers] = useState<Broker[]>([]);
+  const [accounts, setAccounts] = useState<BrokerAccount[]>([]);
+  const [transactions, setTransactions] = useState<CashbackTransaction[]>([]);
+
+  const [availableBalance, setAvailableBalance] = useState(0);
+  const [pendingBalance, setPendingBalance] = useState(0);
+
+  const [selectedBroker, setSelectedBroker] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [submittingAccount, setSubmittingAccount] = useState(false);
+  const [accountMessage, setAccountMessage] = useState("");
+  const [accountError, setAccountError] = useState("");
+
+  const [dataError, setDataError] = useState("");
+
+  const supabase = createClient();
+
+  async function loadDashboard(id: string) {
+    const [
+      brokerResult,
+      accountResult,
+      walletResult,
+      transactionResult,
+    ] = await Promise.all([
+      supabase
+        .from("brokers")
+        .select("id, name, slug, cashback_rate, is_active")
+        .eq("is_active", true)
+        .order("name"),
+
+      supabase
+        .from("broker_accounts")
+        .select(
+          "id, broker_id, account_number, verification_status, created_at"
+        )
+        .eq("user_id", id)
+        .order("created_at", { ascending: false }),
+
+      supabase
+        .from("wallets")
+        .select("available_balance, pending_balance")
+        .eq("user_id", id)
+        .maybeSingle(),
+
+      supabase
+        .from("cashback_transactions")
+        .select("id, cashback_amount, status, created_at")
+        .eq("user_id", id)
+        .order("created_at", { ascending: false }),
+    ]);
+
+    if (brokerResult.error) {
+      setDataError(brokerResult.error.message);
+    } else {
+      setBrokers((brokerResult.data || []) as Broker[]);
+    }
+
+    if (accountResult.error) {
+      setDataError(accountResult.error.message);
+    } else {
+      setAccounts((accountResult.data || []) as BrokerAccount[]);
+    }
+
+    if (walletResult.error) {
+      setDataError(walletResult.error.message);
+    } else {
+      setAvailableBalance(
+        Number(walletResult.data?.available_balance || 0)
+      );
+      setPendingBalance(
+        Number(walletResult.data?.pending_balance || 0)
+      );
+    }
+
+    if (transactionResult.error) {
+      setDataError(transactionResult.error.message);
+    } else {
+      setTransactions(
+        (transactionResult.data || []) as CashbackTransaction[]
+      );
+    }
+  }
+
   useEffect(() => {
-    const supabase = createClient();
     let mounted = true;
 
     async function checkUser() {
@@ -28,10 +180,14 @@ export default function DashboardPage() {
           return;
         }
 
-        if (mounted) {
-          setEmail(data.user.email || "");
-          setLoading(false);
-        }
+        if (!mounted) return;
+
+        setEmail(data.user.email || "");
+        setUserId(data.user.id);
+
+        await loadDashboard(data.user.id);
+
+        if (mounted) setLoading(false);
       } catch {
         if (mounted) window.location.href = "/login";
       }
@@ -48,7 +204,6 @@ export default function DashboardPage() {
     setSigningOut(true);
 
     try {
-      const supabase = createClient();
       await supabase.auth.signOut();
       window.location.href = "/login";
     } catch {
@@ -56,12 +211,117 @@ export default function DashboardPage() {
     }
   }
 
-  const navigation = [
-    { id: "overview", label: "Overview", icon: "⌂" },
-    { id: "accounts", label: "Trading Accounts", icon: "▣" },
-    { id: "transactions", label: "Transactions", icon: "⇄" },
-    { id: "referrals", label: "Referrals", icon: "♧" },
-  ] as const;
+  async function submitAccount(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    setAccountMessage("");
+    setAccountError("");
+
+    if (!selectedBroker) {
+      setAccountError("Please select a broker.");
+      return;
+    }
+
+    const selected = brokers.find(
+      (broker) => broker.slug === selectedBroker
+    );
+
+    if (!selected) {
+      setAccountError("This broker is currently unavailable.");
+      return;
+    }
+
+    const cleanAccountNumber = accountNumber.trim();
+
+    if (cleanAccountNumber.length < 3 || cleanAccountNumber.length > 40) {
+      setAccountError("Please enter a valid trading Account ID.");
+      return;
+    }
+
+    setSubmittingAccount(true);
+
+    try {
+      const { data: existing, error: checkError } = await supabase
+        .from("broker_accounts")
+        .select("id")
+        .eq("user_id", userId)
+        .eq("broker_id", selected.id)
+        .eq("account_number", cleanAccountNumber)
+        .maybeSingle();
+
+      if (checkError) throw checkError;
+
+      if (existing) {
+        setAccountError(
+          "This trading account has already been submitted."
+        );
+        setSubmittingAccount(false);
+        return;
+      }
+
+      const { error } = await supabase
+        .from("broker_accounts")
+        .insert({
+          user_id: userId,
+          broker_id: selected.id,
+          account_number: cleanAccountNumber,
+          verification_status: "pending",
+        });
+
+      if (error) throw error;
+
+      setAccountNumber("");
+      setAccountMessage(
+        "Congratulations! Your account is submitted."
+      );
+
+      await loadDashboard(userId);
+      setActiveTab("accounts");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to submit your account. Please try again.";
+
+      setAccountError(message);
+    } finally {
+      setSubmittingAccount(false);
+    }
+  }
+
+  function openBroker(link: string) {
+    window.open(link, "_blank", "noopener,noreferrer");
+  }
+
+  function copyText(value: string) {
+    navigator.clipboard
+      .writeText(value)
+      .then(() => {
+        alert("Copied successfully.");
+      })
+      .catch(() => {
+        alert("Unable to copy. Please copy it manually.");
+      });
+  }
+
+  const totalCashback = transactions.reduce(
+    (total, item) => total + Number(item.cashback_amount || 0),
+    0
+  );
+
+  const verifiedAccounts = accounts.filter(
+    (account) => account.verification_status === "verified"
+  ).length;
+
+  const pendingAccounts = accounts.filter(
+    (account) => account.verification_status === "pending"
+  ).length;
+
+  const money = (value: number) =>
+    `$${value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
 
   if (loading) {
     return (
@@ -78,24 +338,27 @@ export default function DashboardPage() {
             justify-content: center;
             align-items: center;
             background: #f4f6f9;
-            font-family: Arial, sans-serif;
             color: #64748b;
             gap: 18px;
+            font-family: Arial, sans-serif;
           }
+
           .loading-logo {
             width: 220px;
             max-width: 75vw;
             height: 75px;
             object-fit: contain;
           }
+
           .loading-spinner {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border: 3px solid #dbe4f2;
             border-top-color: #1553bd;
             border-radius: 50%;
             animation: spin 0.8s linear infinite;
           }
+
           @keyframes spin {
             to {
               transform: rotate(360deg);
@@ -112,13 +375,21 @@ export default function DashboardPage() {
         * {
           box-sizing: border-box;
         }
+
+        html,
         body {
           margin: 0;
-          font-family: Arial, sans-serif;
+          padding: 0;
+          width: 100%;
+          min-height: 100%;
+          overflow-x: hidden;
+          font-family: Arial, Helvetica, sans-serif;
           background: #f4f6f9;
         }
+
         button,
-        a {
+        input,
+        select {
           font-family: inherit;
         }
       `}</style>
@@ -126,11 +397,14 @@ export default function DashboardPage() {
       <style jsx>{`
         .dashboard-wrapper {
           min-height: 100vh;
+          width: 100%;
           background: #f4f6f9;
           color: #111827;
+          overflow-x: hidden;
         }
 
         .top-header {
+          width: 100%;
           min-height: 82px;
           background: #ffffff;
           border-bottom: 1px solid #e5e7eb;
@@ -138,7 +412,6 @@ export default function DashboardPage() {
           align-items: center;
           justify-content: space-between;
           padding: 0 5%;
-          color: #111827;
         }
 
         .logo-image {
@@ -147,32 +420,32 @@ export default function DashboardPage() {
           max-width: 240px;
           object-fit: contain;
           display: block;
-          background: transparent;
         }
 
         .header-right {
           display: flex;
           align-items: center;
           gap: 18px;
+          min-width: 0;
         }
 
         .user-email {
           font-size: 13px;
           color: #64748b;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          max-width: 230px;
         }
 
         .logout-button {
           border: 1px solid #d1d5db;
-          background: transparent;
+          background: white;
           color: #111827;
-          padding: 9px 15px;
-          border-radius: 7px;
+          padding: 10px 15px;
+          border-radius: 8px;
           cursor: pointer;
           font-size: 13px;
-        }
-
-        .logout-button:hover {
-          background: #f4f6f9;
+          white-space: nowrap;
         }
 
         .logout-button:disabled {
@@ -181,19 +454,20 @@ export default function DashboardPage() {
         }
 
         .dashboard-layout {
+          width: 100%;
           max-width: 1440px;
           margin: auto;
           padding: 30px 5%;
           display: grid;
-          grid-template-columns: 230px minmax(0, 1fr);
+          grid-template-columns: 235px minmax(0, 1fr);
           gap: 25px;
         }
 
         .sidebar {
           background: white;
           border: 1px solid #e5e7eb;
-          border-radius: 12px;
-          padding: 20px 13px;
+          border-radius: 13px;
+          padding: 20px 12px;
           height: fit-content;
         }
 
@@ -205,30 +479,35 @@ export default function DashboardPage() {
           padding: 5px 12px 15px;
         }
 
+        .navigation {
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+        }
+
         .nav-button {
           width: 100%;
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 12px;
+          padding: 13px 12px;
           border: none;
           background: transparent;
           color: #64748b;
           border-radius: 8px;
           text-align: left;
           cursor: pointer;
-          font-size: 14px;
-          margin-bottom: 5px;
+          font-size: 13px;
+          white-space: nowrap;
         }
 
-        .nav-button:hover {
-          background: #f4f6f9;
+        .nav-button:hover,
+        .nav-button.active {
+          background: #edf3ff;
           color: #1553bd;
         }
 
         .nav-button.active {
-          background: #edf3ff;
-          color: #1553bd;
           font-weight: 700;
         }
 
@@ -236,10 +515,12 @@ export default function DashboardPage() {
           width: 20px;
           font-size: 19px;
           text-align: center;
+          flex-shrink: 0;
         }
 
         .main-content {
           min-width: 0;
+          width: 100%;
         }
 
         .welcome-section {
@@ -255,26 +536,27 @@ export default function DashboardPage() {
         .welcome-section p {
           margin: 0;
           font-size: 14px;
+          line-height: 1.6;
           color: #64748b;
         }
 
         .section-title {
           font-size: 17px;
           font-weight: 700;
-          margin: 0 0 15px;
+          margin: 0 0 16px;
         }
 
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(3, minmax(0, 1fr));
-          gap: 16px;
+          gap: 15px;
           margin-bottom: 25px;
         }
 
         .stat-card {
           background: white;
           border: 1px solid #e5e7eb;
-          border-radius: 11px;
+          border-radius: 12px;
           padding: 20px;
           min-width: 0;
         }
@@ -290,6 +572,7 @@ export default function DashboardPage() {
           font-weight: 800;
           color: #111827;
           margin-bottom: 7px;
+          overflow-wrap: anywhere;
         }
 
         .stat-note {
@@ -300,9 +583,10 @@ export default function DashboardPage() {
         .content-card {
           background: white;
           border: 1px solid #e5e7eb;
-          border-radius: 11px;
+          border-radius: 12px;
           padding: 23px;
           margin-bottom: 20px;
+          min-width: 0;
         }
 
         .empty-state {
@@ -311,8 +595,8 @@ export default function DashboardPage() {
         }
 
         .empty-icon {
-          width: 48px;
-          height: 48px;
+          width: 49px;
+          height: 49px;
           border-radius: 50%;
           background: #edf3ff;
           color: #1553bd;
@@ -331,9 +615,9 @@ export default function DashboardPage() {
         .empty-state p {
           color: #64748b;
           font-size: 13px;
-          line-height: 1.6;
+          line-height: 1.7;
           margin: 0 auto;
-          max-width: 360px;
+          max-width: 400px;
         }
 
         .primary-button {
@@ -341,8 +625,8 @@ export default function DashboardPage() {
           background: #1553bd;
           color: white;
           border: none;
-          border-radius: 7px;
-          padding: 11px 18px;
+          border-radius: 8px;
+          padding: 12px 18px;
           margin-top: 18px;
           font-size: 13px;
           font-weight: 700;
@@ -350,8 +634,210 @@ export default function DashboardPage() {
           cursor: pointer;
         }
 
-        .primary-button:hover {
-          background: #10449f;
+        .primary-button:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+
+        .secondary-button {
+          background: #edf3ff;
+          color: #1553bd;
+          border: 1px solid #dbe7ff;
+          border-radius: 8px;
+          padding: 10px 15px;
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+        }
+
+        .broker-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 16px;
+        }
+
+        .broker-card {
+          border: 1px solid #e5e7eb;
+          border-radius: 12px;
+          padding: 19px;
+          background: #ffffff;
+          min-width: 0;
+        }
+
+        .broker-top {
+          display: flex;
+          align-items: center;
+          gap: 13px;
+          margin-bottom: 15px;
+        }
+
+        .broker-mark {
+          width: 52px;
+          height: 52px;
+          flex-shrink: 0;
+          border-radius: 12px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          background: #edf3ff;
+          color: #1553bd;
+          font-size: 17px;
+          font-weight: 800;
+        }
+
+        .broker-name {
+          font-size: 17px;
+          font-weight: 800;
+          margin: 0 0 5px;
+        }
+
+        .broker-audience {
+          font-size: 12px;
+          color: #64748b;
+          line-height: 1.5;
+        }
+
+        .broker-code {
+          border: 1px dashed #cbd5e1;
+          background: #f8fafc;
+          padding: 12px;
+          border-radius: 8px;
+          margin: 14px 0;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 8px;
+          font-size: 13px;
+        }
+
+        .broker-code strong {
+          color: #1553bd;
+          overflow-wrap: anywhere;
+        }
+
+        .broker-actions {
+          display: flex;
+          gap: 9px;
+          flex-wrap: wrap;
+        }
+
+        .broker-join {
+          flex: 1;
+          min-width: 120px;
+          background: #1553bd;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          padding: 12px;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+        }
+
+        .account-form {
+          display: grid;
+          gap: 14px;
+          max-width: 500px;
+          margin-top: 22px;
+          text-align: left;
+        }
+
+        .form-label {
+          display: block;
+          color: #374151;
+          font-size: 13px;
+          font-weight: 700;
+          margin-bottom: 7px;
+        }
+
+        .form-input {
+          width: 100%;
+          min-height: 46px;
+          padding: 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          background: #ffffff;
+          color: #111827;
+          font-size: 14px;
+          outline: none;
+        }
+
+        .form-input:focus {
+          border-color: #1553bd;
+          box-shadow: 0 0 0 3px #1553bd18;
+        }
+
+        .message {
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 13px;
+          line-height: 1.6;
+          margin-top: 12px;
+          overflow-wrap: anywhere;
+        }
+
+        .success-message {
+          color: #166534;
+          background: #f0fdf4;
+          border: 1px solid #bbf7d0;
+        }
+
+        .error-message {
+          color: #b91c1c;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+        }
+
+        .account-list {
+          display: grid;
+          gap: 12px;
+        }
+
+        .account-row {
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 15px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .account-number {
+          font-size: 14px;
+          font-weight: 700;
+          overflow-wrap: anywhere;
+        }
+
+        .account-date {
+          color: #9ca3af;
+          font-size: 11px;
+          margin-top: 5px;
+        }
+
+        .status {
+          display: inline-block;
+          padding: 6px 10px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: capitalize;
+        }
+
+        .status-pending {
+          background: #fff7ed;
+          color: #c2410c;
+        }
+
+        .status-verified {
+          background: #f0fdf4;
+          color: #15803d;
+        }
+
+        .status-rejected {
+          background: #fef2f2;
+          color: #b91c1c;
         }
 
         .referral-details {
@@ -385,25 +871,76 @@ export default function DashboardPage() {
           color: #64748b;
           font-size: 13px;
           line-height: 1.7;
-          margin-top: 18px;
+          margin: 12px 0;
+        }
+
+        .payout-minimum {
+          background: #f8fafc;
+          border: 1px solid #e5e7eb;
+          border-radius: 10px;
+          padding: 18px;
+          margin-top: 15px;
+        }
+
+        .payout-minimum strong {
+          display: block;
+          font-size: 25px;
+          color: #1553bd;
+          margin-top: 7px;
+        }
+
+        .transaction-row {
+          padding: 14px 0;
+          border-bottom: 1px solid #f1f5f9;
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: center;
+        }
+
+        .transaction-row:last-child {
+          border-bottom: none;
+        }
+
+        .transaction-date {
+          color: #9ca3af;
+          font-size: 11px;
+          margin-top: 5px;
+        }
+
+        .transaction-amount {
+          font-size: 14px;
+          font-weight: 800;
+          white-space: nowrap;
         }
 
         .dashboard-footer {
           text-align: center;
-          padding: 20px;
+          padding: 22px 15px;
           color: #9ca3af;
           font-size: 12px;
         }
 
-        @media (max-width: 800px) {
+        .data-warning {
+          color: #b45309;
+          background: #fffbeb;
+          border: 1px solid #fde68a;
+          padding: 12px;
+          border-radius: 8px;
+          font-size: 12px;
+          margin-bottom: 15px;
+          overflow-wrap: anywhere;
+        }
+
+        @media (max-width: 900px) {
           .dashboard-layout {
             grid-template-columns: 1fr;
-            padding: 20px 4%;
-            gap: 18px;
+            padding: 20px 3%;
+            gap: 16px;
           }
 
           .sidebar {
-            padding: 12px;
+            padding: 10px;
           }
 
           .sidebar-heading {
@@ -411,16 +948,23 @@ export default function DashboardPage() {
           }
 
           .navigation {
-            display: flex;
-            gap: 5px;
+            flex-direction: row;
+            gap: 6px;
             overflow-x: auto;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+          }
+
+          .navigation::-webkit-scrollbar {
+            display: none;
           }
 
           .nav-button {
             width: auto;
+            flex: 0 0 auto;
             white-space: nowrap;
             margin: 0;
-            padding: 11px 12px;
+            padding: 11px 13px;
             font-size: 12px;
           }
 
@@ -432,16 +976,17 @@ export default function DashboardPage() {
         @media (max-width: 520px) {
           .top-header {
             min-height: 72px;
-            padding: 0 4%;
+            padding: 0 12px;
+            width: 100%;
           }
 
           .logo-image {
-            height: 50px;
-            max-width: 180px;
+            height: 52px;
+            max-width: 175px;
           }
 
           .header-right {
-            gap: 8px;
+            gap: 7px;
           }
 
           .user-email {
@@ -449,8 +994,14 @@ export default function DashboardPage() {
           }
 
           .logout-button {
-            padding: 8px 11px;
+            padding: 9px 11px;
             font-size: 12px;
+          }
+
+          .dashboard-layout {
+            width: 100%;
+            padding: 16px 12px;
+            gap: 14px;
           }
 
           .welcome-section h1 {
@@ -459,7 +1010,7 @@ export default function DashboardPage() {
 
           .stats-grid {
             grid-template-columns: 1fr;
-            gap: 11px;
+            gap: 10px;
           }
 
           .stat-card {
@@ -474,8 +1025,20 @@ export default function DashboardPage() {
             padding: 16px;
           }
 
+          .broker-grid {
+            grid-template-columns: 1fr;
+          }
+
           .referral-details {
             grid-template-columns: 1fr;
+          }
+
+          .account-row {
+            align-items: flex-start;
+          }
+
+          .transaction-row {
+            align-items: flex-start;
           }
         }
       `}</style>
@@ -489,6 +1052,7 @@ export default function DashboardPage() {
 
         <div className="header-right">
           <span className="user-email">{email}</span>
+
           <button
             className="logout-button"
             onClick={handleSignOut}
@@ -504,7 +1068,7 @@ export default function DashboardPage() {
           <div className="sidebar-heading">MAIN MENU</div>
 
           <nav className="navigation">
-            {navigation.map((item) => (
+            {NAVIGATION.map((item) => (
               <button
                 key={item.id}
                 className={`nav-button ${
@@ -524,12 +1088,19 @@ export default function DashboardPage() {
             <h1>
               {activeTab === "overview"
                 ? "Welcome to ReTrade"
-                : navigation.find((item) => item.id === activeTab)?.label}
+                : NAVIGATION.find((item) => item.id === activeTab)?.label}
             </h1>
+
             <p>
               Manage your trading accounts and track your cashback activity.
             </p>
           </section>
+
+          {dataError && (
+            <div className="data-warning">
+              Some dashboard information could not be loaded: {dataError}
+            </div>
+          )}
 
           {activeTab === "overview" && (
             <>
@@ -538,20 +1109,30 @@ export default function DashboardPage() {
               <div className="stats-grid">
                 <div className="stat-card">
                   <div className="stat-label">Total Cashback</div>
-                  <div className="stat-value">$0.00</div>
-                  <div className="stat-note">No cashback recorded yet</div>
+                  <div className="stat-value">
+                    {money(totalCashback)}
+                  </div>
+                  <div className="stat-note">
+                    Recorded cashback transactions
+                  </div>
                 </div>
 
                 <div className="stat-card">
                   <div className="stat-label">Available Balance</div>
-                  <div className="stat-value">$0.00</div>
+                  <div className="stat-value">
+                    {money(availableBalance)}
+                  </div>
                   <div className="stat-note">Your wallet balance</div>
                 </div>
 
                 <div className="stat-card">
-                  <div className="stat-label">Trading Accounts</div>
-                  <div className="stat-value">0</div>
-                  <div className="stat-note">Connected accounts</div>
+                  <div className="stat-label">Verified Accounts</div>
+                  <div className="stat-value">
+                    {verifiedAccounts}
+                  </div>
+                  <div className="stat-note">
+                    {pendingAccounts} pending approval
+                  </div>
                 </div>
               </div>
 
@@ -562,47 +1143,280 @@ export default function DashboardPage() {
                   <div className="empty-icon">＋</div>
                   <h3>Welcome to your ReTrade dashboard</h3>
                   <p>
-                    Your dashboard is ready. Once your trading accounts are
-                    connected and eligible trading activity is verified,
-                    your cashback information will appear here.
+                    Explore our supported brokers, connect your trading
+                    account and wait for verification. Eligible cashback
+                    activity will appear here when recorded.
                   </p>
 
                   <button
                     className="primary-button"
-                    onClick={() => setActiveTab("accounts")}
+                    onClick={() => setActiveTab("brokers")}
                   >
-                    View Trading Accounts
+                    Explore Brokers
                   </button>
                 </div>
               </div>
             </>
           )}
 
+          {activeTab === "brokers" && (
+            <>
+              <div className="content-card">
+                <h2 className="section-title">Explore Our Brokers</h2>
+
+                <p className="referral-note">
+                  Choose one of our supported brokers. Use the ReTrade
+                  referral link before registering or logging in.
+                </p>
+
+                <div className="broker-grid">
+                  {BROKER_CONFIG.map((config) => {
+                    const broker = brokers.find(
+                      (item) => item.slug === config.slug
+                    );
+
+                    return (
+                      <div className="broker-card" key={config.slug}>
+                        <div className="broker-top">
+                          <div className="broker-mark">
+                            {config.initials}
+                          </div>
+
+                          <div>
+                            <h3 className="broker-name">
+                              {config.name}
+                            </h3>
+
+                            <div className="broker-audience">
+                              {config.audience}
+                            </div>
+                          </div>
+                        </div>
+
+                        {config.code && (
+                          <div className="broker-code">
+                            <span>Referral code</span>
+                            <strong>{config.code}</strong>
+
+                            <button
+                              className="secondary-button"
+                              onClick={() => copyText(config.code)}
+                            >
+                              Copy
+                            </button>
+                          </div>
+                        )}
+
+                        <div className="broker-actions">
+                          <button
+                            className="broker-join"
+                            onClick={() => openBroker(config.link)}
+                            disabled={!broker}
+                          >
+                            {broker ? "Join Broker" : "Unavailable"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="content-card">
+                <h2 className="section-title">
+                  Connect Your Trading Account
+                </h2>
+
+                <p className="referral-note">
+                  After visiting your broker, return here and submit your
+                  trading Account ID. Do not enter your MT4/MT5 password
+                  or investor password.
+                </p>
+
+                <form
+                  className="account-form"
+                  onSubmit={submitAccount}
+                >
+                  <div>
+                    <label className="form-label">
+                      Select Broker
+                    </label>
+
+                    <select
+                      className="form-input"
+                      value={selectedBroker}
+                      onChange={(event) =>
+                        setSelectedBroker(event.target.value)
+                      }
+                      required
+                    >
+                      <option value="">Choose a broker</option>
+
+                      {BROKER_CONFIG.map((config) => {
+                        const available = brokers.some(
+                          (broker) => broker.slug === config.slug
+                        );
+
+                        if (!available) return null;
+
+                        return (
+                          <option
+                            key={config.slug}
+                            value={config.slug}
+                          >
+                            {config.name}
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="form-label">
+                      Trading Account ID
+                    </label>
+
+                    <input
+                      className="form-input"
+                      type="text"
+                      value={accountNumber}
+                      onChange={(event) =>
+                        setAccountNumber(event.target.value)
+                      }
+                      placeholder="Enter your trading Account ID"
+                      minLength={3}
+                      maxLength={40}
+                      required
+                    />
+                  </div>
+
+                  <button
+                    className="primary-button"
+                    type="submit"
+                    disabled={submittingAccount}
+                  >
+                    {submittingAccount
+                      ? "Submitting..."
+                      : "Submit Account"}
+                  </button>
+                </form>
+
+                {accountMessage && (
+                  <div className="message success-message">
+                    {accountMessage}
+                  </div>
+                )}
+
+                {accountError && (
+                  <div className="message error-message">
+                    {accountError}
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+
           {activeTab === "accounts" && (
             <div className="content-card">
-              <h2 className="section-title">Trading Accounts</h2>
-              <div className="empty-state">
-                <div className="empty-icon">▣</div>
-                <h3>No trading accounts connected</h3>
-                <p>
-                  Your eligible broker trading accounts will appear here
-                  after they have been connected and verified.
-                </p>
-              </div>
+              <h2 className="section-title">Your Trading Accounts</h2>
+
+              {accounts.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">▣</div>
+                  <h3>No trading accounts connected</h3>
+                  <p>
+                    Connect your broker account to begin the verification
+                    process.
+                  </p>
+
+                  <button
+                    className="primary-button"
+                    onClick={() => setActiveTab("brokers")}
+                  >
+                    Connect Account
+                  </button>
+                </div>
+              ) : (
+                <div className="account-list">
+                  {accounts.map((account) => {
+                    const broker = brokers.find(
+                      (item) => item.id === account.broker_id
+                    );
+
+                    return (
+                      <div className="account-row" key={account.id}>
+                        <div>
+                          <div className="account-number">
+                            {broker?.name || "Broker"} —{" "}
+                            {account.account_number}
+                          </div>
+
+                          <div className="account-date">
+                            Submitted{" "}
+                            {new Date(
+                              account.created_at
+                            ).toLocaleDateString()}
+                          </div>
+                        </div>
+
+                        <span
+                          className={`status status-${account.verification_status}`}
+                        >
+                          {account.verification_status === "verified"
+                            ? "Approved"
+                            : account.verification_status === "pending"
+                              ? "Pending Approval"
+                              : "Rejected"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              <p className="referral-note">
+                Account verification is handled by the ReTrade admin team.
+                The expected review time is within 12 hours.
+              </p>
             </div>
           )}
 
           {activeTab === "transactions" && (
             <div className="content-card">
               <h2 className="section-title">Transactions</h2>
-              <div className="empty-state">
-                <div className="empty-icon">⇄</div>
-                <h3>No transactions yet</h3>
-                <p>
-                  Your cashback credits and wallet transactions will
-                  appear here when they become available.
-                </p>
-              </div>
+
+              {transactions.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">⇄</div>
+                  <h3>No transactions yet</h3>
+                  <p>
+                    Your recorded cashback transactions will appear here.
+                  </p>
+                </div>
+              ) : (
+                transactions.map((transaction) => (
+                  <div
+                    className="transaction-row"
+                    key={transaction.id}
+                  >
+                    <div>
+                      <strong>Cashback</strong>
+                      <div className="transaction-date">
+                        {new Date(
+                          transaction.created_at
+                        ).toLocaleDateString()}
+                      </div>
+                      <div className="transaction-date">
+                        Status: {transaction.status}
+                      </div>
+                    </div>
+
+                    <div className="transaction-amount">
+                      {money(Number(transaction.cashback_amount))}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           )}
 
@@ -636,11 +1450,57 @@ export default function DashboardPage() {
 
               <div className="empty-state">
                 <div className="empty-icon">♧</div>
-                <h3>Your referrals will appear here</h3>
+                <h3>Your referral link is being prepared</h3>
                 <p>
-                  Referral activity and eligible rewards will appear
-                  here once they are recorded and verified.
+                  Your personal referral link and referral activity will
+                  appear here once the referral tracking system is enabled.
                 </p>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "payout" && (
+            <div className="content-card">
+              <h2 className="section-title">Wallet & Payout</h2>
+
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-label">Available Balance</div>
+                  <div className="stat-value">
+                    {money(availableBalance)}
+                  </div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-label">Pending Balance</div>
+                  <div className="stat-value">
+                    {money(pendingBalance)}
+                  </div>
+                </div>
+
+                <div className="stat-card">
+                  <div className="stat-label">Minimum Payout</div>
+                  <div className="stat-value">$5.00</div>
+                </div>
+              </div>
+
+              <div className="payout-minimum">
+                <span className="stat-label">
+                  Minimum withdrawal amount
+                </span>
+
+                <strong>$5.00</strong>
+
+                <p className="referral-note">
+                  Your available balance must be at least $5 before
+                  requesting a payout.
+                </p>
+              </div>
+
+              <div className="message success-message">
+                Wallet balance is displayed from your ReTrade account.
+                Payout requests will be enabled after the secure withdrawal
+                process and supported payment methods are configured.
               </div>
             </div>
           )}
